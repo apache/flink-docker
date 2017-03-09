@@ -13,3 +13,6 @@ given release (e.g. 1.2) and assemble a `.travis.yml` file dynamically. Two
 examples are
 [httpd](https://github.com/docker-library/httpd/blob/master/update.sh) and
 [cassandra](https://github.com/docker-library/cassandra/blob/master/update.sh).
+
+TODO: we may want to teach `docker-entrypoint.sh` to drop privs to the flink
+user so `docker run flink bash` gives a root shell into the container.
