@@ -1,24 +1,45 @@
+###############################################################################
+#  Licensed to the Apache Software Foundation (ASF) under one
+#  or more contributor license agreements.  See the NOTICE file
+#  distributed with this work for additional information
+#  regarding copyright ownership.  The ASF licenses this file
+#  to you under the Apache License, Version 2.0 (the
+#  "License"); you may not use this file except in compliance
+#  with the License.  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+# limitations under the License.
+###############################################################################
+
 FROM openjdk:8-jre-alpine
 
+# Configure Flink version
 ENV FLINK_VERSION=1.2.0 \
     HADOOP_VERSION=27 \
-    SCALA_VERSION=2.11
+    SCALA_VERSION=2.11 \
+    GPG_KEY=43CE299BC305AFF8B912AA95183F6944D9839159
 
-ENV GPG_KEY 43CE299BC305AFF8B912AA95183F6944D9839159
-
-RUN addgroup -S flink && adduser -S -G flink flink
-RUN apk add --no-cache bash snappy
-
-ENV FLINK_HOME /opt/flink
+# Prepare environment
+ENV FLINK_USER=flink \
+    FLINK_UID=9999 \
+    FLINK_HOME=/opt/flink
+ENV PATH=$FLINK_HOME/bin:$PATH
+RUN addgroup -S -g $FLINK_UID $FLINK_USER && \
+    adduser -D -S -H -u $FLINK_UID -G $FLINK_USER -h $FLINK_HOME $FLINK_USER
 WORKDIR $FLINK_HOME
-ENV PATH $FLINK_HOME/bin:$PATH
 
+# Install build dependencies and flink
 ENV FLINK_URL_FILE_PATH flink/flink-${FLINK_VERSION}/flink-${FLINK_VERSION}-bin-hadoop${HADOOP_VERSION}-scala_${SCALA_VERSION}.tgz
-
 # Not all mirrors have the .asc files
 ENV FLINK_TGZ_URL=https://www.apache.org/dyn/closer.cgi?action=download&filename=${FLINK_URL_FILE_PATH} \
     FLINK_ASC_URL=https://www.apache.org/dist/${FLINK_URL_FILE_PATH}.asc
 
+RUN apk add --no-cache bash snappy
 RUN set -ex; \
   apk add --no-cache --virtual .build-deps \
     ca-certificates \
@@ -40,11 +61,11 @@ RUN set -ex; \
   \
   apk del .build-deps; \
   \
-  chown -R flink:flink .;
+  chown -R $FLINK_USER:$FLINK_USER .;
 
-COPY docker-entrypoint.sh /
-
+# Configure container
 USER flink
+ADD docker-entrypoint.sh $FLINK_HOME/bin/
+ENTRYPOINT ["docker-entrypoint.sh"]
 EXPOSE 6123 8081
-ENTRYPOINT ["/docker-entrypoint.sh"]
-CMD ["--help"]
+CMD ["help"]
