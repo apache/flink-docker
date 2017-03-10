@@ -16,7 +16,12 @@ function usage() {
 
 function error() {
     local msg="$1"
-    [ -n "$2" ] && local code="$2" || local code=1
+    if [ -n "$2" ]
+    then
+        local code="$2"
+    else
+        local code=1
+    fi
     echo >&2 "$msg"
     exit "$code"
 }
@@ -43,7 +48,7 @@ while getopts r:f:h arg; do
   esac
 done
 
-if [ -z "$flink_release" -o -z "$flink_version" ]; then
+if [ -z "$flink_release" ] || [ -z "$flink_version" ]; then
     usage
     exit 1
 fi
