@@ -16,8 +16,7 @@ function usage() {
 
 function error() {
     local msg="$1"
-    if [ -n "$2" ]
-    then
+    if [ -n "$2" ] then
         local code="$2"
     else
         local code=1
