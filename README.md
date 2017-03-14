@@ -18,5 +18,5 @@ TODO: we may want to teach `docker-entrypoint.sh` to drop privs to the flink
 user so `docker run flink bash` gives a root shell into the container.
 
 TODO: we should have a `generate-stackbrew-library.sh` script to facilitate automated building, pushing, and tagging of Docker images. Two examples are
-[httpd](https://github.com/docker-library/httpd/blob/master/generate-stackbrew-library.sh)
+[httpd](https://github.com/docker-library/httpd/blob/master/generate-stackbrew-library.sh) and
 [cassandra](https://github.com/docker-library/cassandra/blob/master/generate-stackbrew-library.sh).
