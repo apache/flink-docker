@@ -25,16 +25,14 @@ ENV FLINK_VERSION=1.2.0 \
     GPG_KEY=43CE299BC305AFF8B912AA95183F6944D9839159
 
 # Prepare environment
-ENV FLINK_USER=flink \
-    FLINK_UID=9999 \
-    FLINK_HOME=/opt/flink
+ENV FLINK_HOME=/opt/flink
 ENV PATH=$FLINK_HOME/bin:$PATH
-RUN groupadd --system --gid=$FLINK_UID $FLINK_USER && \
-    useradd --system --uid=$FLINK_UID --gid $FLINK_USER $FLINK_USER
+RUN groupadd --system --gid=9999 flink && \
+    useradd --system --home-dir $FLINK_HOME --uid=9999 --gid=flink flink
 WORKDIR $FLINK_HOME
 
 # Install build dependencies and flink
-ENV FLINK_URL_FILE_PATH flink/flink-${FLINK_VERSION}/flink-${FLINK_VERSION}-bin-hadoop${HADOOP_VERSION}-scala_${SCALA_VERSION}.tgz
+ENV FLINK_URL_FILE_PATH=flink/flink-${FLINK_VERSION}/flink-${FLINK_VERSION}-bin-hadoop${HADOOP_VERSION}-scala_${SCALA_VERSION}.tgz
 # Not all mirrors have the .asc files
 ENV FLINK_TGZ_URL=https://www.apache.org/dyn/closer.cgi?action=download&filename=${FLINK_URL_FILE_PATH} \
     FLINK_ASC_URL=https://www.apache.org/dist/${FLINK_URL_FILE_PATH}.asc
@@ -54,7 +52,7 @@ RUN set -ex; \
   tar -xf flink.tgz --strip-components=1; \
   rm flink.tgz; \
   \
-  chown -R $FLINK_USER:$FLINK_USER .;
+  chown -R flink:flink .;
 
 # Configure container
 USER flink
