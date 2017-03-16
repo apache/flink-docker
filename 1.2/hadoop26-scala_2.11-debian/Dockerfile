@@ -21,8 +21,7 @@ FROM openjdk:8-jre
 # Configure Flink version
 ENV FLINK_VERSION=1.2.0 \
     HADOOP_VERSION=26 \
-    SCALA_VERSION=2.11 \
-    GPG_KEY=43CE299BC305AFF8B912AA95183F6944D9839159
+    SCALA_VERSION=2.11
 
 # Prepare environment
 ENV FLINK_HOME=/opt/flink
@@ -37,6 +36,9 @@ ENV FLINK_URL_FILE_PATH=flink/flink-${FLINK_VERSION}/flink-${FLINK_VERSION}-bin-
 ENV FLINK_TGZ_URL=https://www.apache.org/dyn/closer.cgi?action=download&filename=${FLINK_URL_FILE_PATH} \
     FLINK_ASC_URL=https://www.apache.org/dist/${FLINK_URL_FILE_PATH}.asc
 
+# For GPG verification instead of relying on key servers
+COPY KEYS /KEYS
+
 RUN apt-get update && \
   apt-get -y install libsnappy1 && \
   rm -rf /var/lib/apt/lists/*
@@ -45,7 +47,7 @@ RUN set -ex; \
   wget -nv -O flink.tgz.asc "$FLINK_ASC_URL"; \
   \
   export GNUPGHOME="$(mktemp -d)"; \
-  gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$GPG_KEY"; \
+  gpg --import /KEYS; \
   gpg --batch --verify flink.tgz.asc flink.tgz; \
   rm -r "$GNUPGHOME" flink.tgz.asc; \
   \
