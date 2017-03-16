@@ -58,14 +58,13 @@ fi
 
 # Defaults, can vary between versions
 source_variants=( debian alpine )
+hadoop_variants=( 2 24 26 27 )
 scala_variants=( 2.10 2.11 )
 docker_entrypoint="docker-entrypoint.sh"
 
 if [ "$flink_release" = "1.2" ]; then
-    hadoop_variants=( 2 24 26 27 )
     gpg_key="43CE299BC305AFF8B912AA95183F6944D9839159" # rmetzger
 elif [ "$flink_release" = "1.1" ]; then
-    hadoop_variants=( 1 2 24 26 27 )
     gpg_key="2BCCD5D49E8FEA6545E13DB6DE3E0F4C9D403309" # uce
 else
     error "Unsupported release $flink_release"
