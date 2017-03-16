@@ -62,14 +62,6 @@ hadoop_variants=( 2 24 26 27 )
 scala_variants=( 2.10 2.11 )
 docker_entrypoint="docker-entrypoint.sh"
 
-if [ "$flink_release" = "1.2" ]; then
-    gpg_key="43CE299BC305AFF8B912AA95183F6944D9839159" # rmetzger
-elif [ "$flink_release" = "1.1" ]; then
-    gpg_key="2BCCD5D49E8FEA6545E13DB6DE3E0F4C9D403309" # uce
-else
-    error "Unsupported release $flink_release"
-fi
-
 if [ -d "$flink_release" ]; then
     error "Directory $flink_release already exists; delete before continuing"
 fi
@@ -81,12 +73,12 @@ for source_variant in "${source_variants[@]}"; do
         for scala_variant in "${scala_variants[@]}"; do
             dir="$flink_release/hadoop$hadoop_variant-scala_$scala_variant-$source_variant"
             mkdir "$dir"
+            cp KEYS "$dir/KEYS"
             cp "$docker_entrypoint" "$dir/docker-entrypoint.sh"
             sed \
                 -e "s/%%FLINK_VERSION%%/$flink_version/" \
                 -e "s/%%HADOOP_VERSION%%/$hadoop_variant/" \
                 -e "s/%%SCALA_VERSION%%/$scala_variant/" \
-                -e "s/%%GPG_KEY%%/$gpg_key/" \
                 "Dockerfile-$source_variant.template" > "$dir/Dockerfile"
         done
     done
