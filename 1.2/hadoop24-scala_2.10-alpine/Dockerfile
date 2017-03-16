@@ -46,8 +46,8 @@ RUN set -ex; \
     tar \
   ; \
   \
-  wget -O flink.tgz "$FLINK_TGZ_URL"; \
-  wget -O flink.tgz.asc "$FLINK_ASC_URL"; \
+  wget -nv -O flink.tgz "$FLINK_TGZ_URL"; \
+  wget -nv -O flink.tgz.asc "$FLINK_ASC_URL"; \
   \
   export GNUPGHOME="$(mktemp -d)"; \
   gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$GPG_KEY"; \
