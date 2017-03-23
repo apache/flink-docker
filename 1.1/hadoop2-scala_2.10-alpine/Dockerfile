@@ -19,7 +19,7 @@
 FROM openjdk:8-jre-alpine
 
 # Configure Flink version
-ENV FLINK_VERSION=1.1.4 \
+ENV FLINK_VERSION=1.1.5 \
     HADOOP_VERSION=2 \
     SCALA_VERSION=2.10
 
