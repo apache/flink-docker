@@ -24,9 +24,9 @@ Developers:
 ********************************* PLEASE NOTE **********************************
 
   Releases will be signed using one of these keys in this file. This file will
-  be available with the distributed Apache Aurora releases at:
+  be available with the distributed Apache Flink releases at:
 
-      https://dist.apache.org/repos/dist/release/incubator/flink/KEYS
+      https://dist.apache.org/repos/dist/release/flink/KEYS
 
 ********************************************************************************
 
@@ -1091,4 +1091,62 @@ eLMRVGhwqglz30Qd1vsJwLY6cqRZaxBkhUY1e1R4Jy1+vvtW29x5JZWeALd83buQ
 uoBmVh8EBUs8SmLLnROECgwUaiUhJcIF81pSg0sqSkbklFxOgAQhlr7YsYXPS996
 wBdyHn4VdS6RxwJFMUcfWHMUsA==
 =4wzi
+-----END PGP PUBLIC KEY BLOCK-----
+
+pub   4096R/B065B356 2017-03-17
+uid                  Tzu-Li Tai (CODE SIGNING KEY) <tzulitai@apache.org>
+sig 3        B065B356 2017-03-17  Tzu-Li Tai (CODE SIGNING KEY) <tzulitai@apache.org>
+sub   4096R/95CE3746 2017-03-17
+sig          B065B356 2017-03-17  Tzu-Li Tai (CODE SIGNING KEY) <tzulitai@apache.org>
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: GnuPG v1
+
+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
+WnayhlwE9vgMps6mQP7PvTU=
+=PUDt
 -----END PGP PUBLIC KEY BLOCK-----
