@@ -65,7 +65,7 @@ RUN set -ex; \
 
 # Configure container
 USER flink
-ADD docker-entrypoint.sh $FLINK_HOME/bin/
-ENTRYPOINT ["docker-entrypoint.sh"]
+COPY docker-entrypoint.sh /
+ENTRYPOINT ["/docker-entrypoint.sh"]
 EXPOSE 6123 8081
 CMD ["help"]
