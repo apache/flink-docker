@@ -85,7 +85,6 @@ for scala_variant in "${scala_variants[@]}"; do
 
     # For the latest supported Scala version, add tags that omit it
     if [ "$scala_variant" = "${scala_variants[-1]}" ]; then
-        # The last element of add_tags must not have surrounding quotes!
         add_tags=( $flink_version $version ${aliases[$version]:-} )
         tags=(
             ${tags[@]}
