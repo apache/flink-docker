@@ -62,12 +62,22 @@ hadoop_variants=( 2 24 26 27 )
 scala_variants=( 2.10 2.11 )
 docker_entrypoint="docker-entrypoint.sh"
 
+# Version-specific variants (example)
+# if [ "$flink_release" = "x.y" ]; then
+#     scala_variants=( 2.10 2.11 2.12 )
+# fi
+
 if [ -d "$flink_release" ]; then
     error "Directory $flink_release already exists; delete before continuing"
 fi
 
+echo -n >&2 "Checking for latest KEYS..."
+wget -q -O "KEYS" https://www.apache.org/dist/flink/KEYS
+echo >&2 " done."
+
 mkdir "$flink_release"
 
+echo -n >&2 "Generating Dockerfiles..."
 for source_variant in "${source_variants[@]}"; do
     for hadoop_variant in "${hadoop_variants[@]}"; do
         for scala_variant in "${scala_variants[@]}"; do
@@ -83,3 +93,4 @@ for source_variant in "${source_variants[@]}"; do
         done
     done
 done
+echo >&2 " done."
