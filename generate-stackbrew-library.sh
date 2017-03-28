@@ -1,4 +1,11 @@
 #!/bin/bash
+
+# This script generates a manifest compatibile with the expectations set forth
+# by docker-library/official-images.
+#
+# It is not compatible with the version of Bash currently shipped with OS X due
+# to the use of features introduced in Bash 4.
+
 set -eu
 
 declare -A aliases=(
