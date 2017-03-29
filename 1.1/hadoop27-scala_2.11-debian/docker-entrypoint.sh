@@ -21,6 +21,16 @@
 # If unspecified, the hostname of the container is taken as the JobManager address
 JOB_MANAGER_RPC_ADDRESS=${JOB_MANAGER_RPC_ADDRESS:-$(hostname -f)}
 
+drop_privs_cmd() {
+    if [ -x /sbin/su-exec ]; then
+        # Alpine
+        echo su-exec
+    else
+        # Others
+        echo gosu
+    fi
+}
+
 if [ "$1" = "help" ]; then
     echo "Usage: $(basename "$0") (jobmanager|taskmanager|local|help)"
     exit 0
@@ -30,7 +40,7 @@ elif [ "$1" = "jobmanager" ]; then
     echo "blob.server.port: 6124" >> "$FLINK_HOME/conf/flink-conf.yaml"
 
     echo "config file: " && grep '^[^\n#]' "$FLINK_HOME/conf/flink-conf.yaml"
-    "$FLINK_HOME/bin/jobmanager.sh" start cluster
+    $(drop_privs_cmd) flink "$FLINK_HOME/bin/jobmanager.sh" start cluster
 
     # prevent script from exiting
     tail -f /dev/null
@@ -41,13 +51,13 @@ elif [ "$1" = "taskmanager" ]; then
 
     echo "Starting Task Manager"
     echo "config file: " && grep '^[^\n#]' "$FLINK_HOME/conf/flink-conf.yaml"
-    "$FLINK_HOME/bin/taskmanager.sh" start
+    $(drop_privs_cmd) flink "$FLINK_HOME/bin/taskmanager.sh" start
 
     # prevent script from exiting
     tail -f /dev/null
 elif [ "$1" = "local" ]; then
     echo "Starting local cluster"
-    "$FLINK_HOME/bin/start-local.sh"
+    $(drop_privs_cmd) flink "$FLINK_HOME/bin/start-local.sh"
 
     # prevent script from exiting
     tail -f /dev/null

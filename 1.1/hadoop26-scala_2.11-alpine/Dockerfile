@@ -30,7 +30,6 @@ RUN addgroup -S -g 9999 flink && \
     adduser -D -S -H -u 9999 -G flink -h $FLINK_HOME flink
 WORKDIR $FLINK_HOME
 
-# Install build dependencies and flink
 ENV FLINK_URL_FILE_PATH=flink/flink-${FLINK_VERSION}/flink-${FLINK_VERSION}-bin-hadoop${HADOOP_VERSION}-scala_${SCALA_VERSION}.tgz
 # Not all mirrors have the .asc files
 ENV FLINK_TGZ_URL=https://www.apache.org/dyn/closer.cgi?action=download&filename=${FLINK_URL_FILE_PATH} \
@@ -39,7 +38,10 @@ ENV FLINK_TGZ_URL=https://www.apache.org/dyn/closer.cgi?action=download&filename
 # For GPG verification instead of relying on key servers
 COPY KEYS /KEYS
 
-RUN apk add --no-cache bash snappy
+# Install dependencies, Bash, and su-exec for easy step-down from root
+RUN apk add --no-cache bash snappy 'su-exec>=0.2'
+
+# Install Flink
 RUN set -ex; \
   apk add --no-cache --virtual .build-deps \
     ca-certificates \
@@ -64,7 +66,6 @@ RUN set -ex; \
   chown -R flink:flink .;
 
 # Configure container
-USER flink
 COPY docker-entrypoint.sh /
 ENTRYPOINT ["/docker-entrypoint.sh"]
 EXPOSE 6123 6124 8081
