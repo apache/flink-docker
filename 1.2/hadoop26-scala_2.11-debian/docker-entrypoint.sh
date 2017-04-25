@@ -38,6 +38,7 @@ elif [ "$1" = "jobmanager" ]; then
     echo "Starting Job Manager"
     sed -i -e "s/jobmanager.rpc.address: localhost/jobmanager.rpc.address: ${JOB_MANAGER_RPC_ADDRESS}/g" "$FLINK_HOME/conf/flink-conf.yaml"
     echo "blob.server.port: 6124" >> "$FLINK_HOME/conf/flink-conf.yaml"
+    echo "query.server.port: 6125" >> "$FLINK_HOME/conf/flink-conf.yaml"
 
     echo "config file: " && grep '^[^\n#]' "$FLINK_HOME/conf/flink-conf.yaml"
     $(drop_privs_cmd) flink "$FLINK_HOME/bin/jobmanager.sh" start cluster
@@ -48,6 +49,7 @@ elif [ "$1" = "taskmanager" ]; then
     sed -i -e "s/jobmanager.rpc.address: localhost/jobmanager.rpc.address: ${JOB_MANAGER_RPC_ADDRESS}/g" "$FLINK_HOME/conf/flink-conf.yaml"
     sed -i -e "s/taskmanager.numberOfTaskSlots: 1/taskmanager.numberOfTaskSlots: $(grep -c ^processor /proc/cpuinfo)/g" "$FLINK_HOME/conf/flink-conf.yaml"
     echo "blob.server.port: 6124" >> "$FLINK_HOME/conf/flink-conf.yaml"
+    echo "query.server.port: 6125" >> "$FLINK_HOME/conf/flink-conf.yaml"
 
     echo "Starting Task Manager"
     echo "config file: " && grep '^[^\n#]' "$FLINK_HOME/conf/flink-conf.yaml"

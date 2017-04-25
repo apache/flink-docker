@@ -19,7 +19,7 @@
 FROM openjdk:8-jre-alpine
 
 # Configure Flink version
-ENV FLINK_VERSION=1.2.0 \
+ENV FLINK_VERSION=1.2.1 \
     HADOOP_VERSION=26 \
     SCALA_VERSION=2.11
 
@@ -68,5 +68,5 @@ RUN set -ex; \
 # Configure container
 COPY docker-entrypoint.sh /
 ENTRYPOINT ["/docker-entrypoint.sh"]
-EXPOSE 6123 6124 8081
+EXPOSE 6123 8081
 CMD ["help"]
