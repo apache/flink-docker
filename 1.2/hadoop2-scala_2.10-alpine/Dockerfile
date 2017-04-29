@@ -18,6 +18,9 @@
 
 FROM openjdk:8-jre-alpine
 
+# Install dependencies, Bash, and su-exec for easy step-down from root
+RUN apk add --no-cache bash snappy 'su-exec>=0.2'
+
 # Configure Flink version
 ENV FLINK_VERSION=1.2.1 \
     HADOOP_VERSION=2 \
@@ -37,9 +40,6 @@ ENV FLINK_TGZ_URL=https://www.apache.org/dyn/closer.cgi?action=download&filename
 
 # For GPG verification instead of relying on key servers
 COPY KEYS /KEYS
-
-# Install dependencies, Bash, and su-exec for easy step-down from root
-RUN apk add --no-cache bash snappy 'su-exec>=0.2'
 
 # Install Flink
 RUN set -ex; \
