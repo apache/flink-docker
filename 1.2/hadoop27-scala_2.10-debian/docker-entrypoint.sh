@@ -53,10 +53,7 @@ elif [ "$1" = "taskmanager" ]; then
     exec $(drop_privs_cmd) flink "$FLINK_HOME/bin/taskmanager.sh" start-foreground
 elif [ "$1" = "local" ]; then
     echo "Starting local cluster"
-    $(drop_privs_cmd) flink "$FLINK_HOME/bin/start-local.sh"
-
-    # prevent script from exiting
-    tail -f /dev/null
+    exec $(drop_privs_cmd) flink "$FLINK_HOME/bin/jobmanager.sh" start-foreground local
 fi
 
 exec "$@"
