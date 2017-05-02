@@ -81,37 +81,57 @@ for scala_variant in "${scala_variants[@]}"; do
     # additional tags as relevant
     tags=( $full_version )
 
+    is_latest_hadoop=
+    [ "$hadoop_variant" = "${hadoop_variants[-1]}" ] && is_latest_hadoop=1
+
+    is_latest_scala=
+    [ "$scala_variant" = "${scala_variants[-1]}" ] && is_latest_scala=1
+
     # For the latest supported Hadoop version, add tags that omit it
-    if [ "$hadoop_variant" = "${hadoop_variants[-1]}" ]; then
-        add_tags=( $flink_version $version ${aliases[$version]:-} )
+    if [ -n "$is_latest_hadoop" ]; then
+        add_tags=( $flink_version $version )
         tags=(
             ${tags[@]}
             ${add_tags[@]/%/-scala_$scala_variant}
+            "scala_$scala_variant"
         )
     fi
 
     # For the latest supported Scala version, add tags that omit it
-    if [ "$scala_variant" = "${scala_variants[-1]}" ]; then
-        add_tags=( $flink_version $version ${aliases[$version]:-} )
+    if [ -n "$is_latest_scala" ]; then
+        add_tags=( $flink_version $version )
         tags=(
             ${tags[@]}
             ${add_tags[@]/%/-hadoop$hadoop_variant}
+            "hadoop$hadoop_variant"
         )
     fi
 
     # For the latest supported Hadoop & Scala version, add tags that omit them
-    if [ "$hadoop_variant" = "${hadoop_variants[-1]}" ] && [ "$scala_variant" = "${scala_variants[-1]}" ]; then
+    if [ -n "$is_latest_hadoop" ] && [ -n "$is_latest_scala" ]; then
         tags=(
             ${tags[@]}
             $flink_version
             $version
-            ${aliases[$version]:-}
         )
     fi
 
     # Add -$variant suffix for non-debian-based images
     if [ "$source_variant" != "debian" ]; then
         tags=( ${tags[@]/%/-$source_variant} )
+    fi
+
+    # Finally, designate the 'latest' tag (or '$variant', for non-debian-based images)
+    if [ -n "$is_latest_hadoop" ] && [ -n "$is_latest_scala" ]; then
+        alias_tag="${aliases[$version]:-}"
+        if [ -n "$alias_tag" ] && [ "$source_variant" != "debian" ]; then
+            alias_tag="$source_variant"
+        fi
+
+        tags=(
+            ${tags[@]}
+            "$alias_tag"
+        )
     fi
 
     echo
