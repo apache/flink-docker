@@ -57,7 +57,7 @@ if [[ ! "$flink_version" =~ ^$flink_release\.+ ]]; then
 fi
 
 # Defaults, can vary between versions
-source_variants=( debian alpine )
+source_variants=( debian )
 hadoop_variants=( 2 24 26 27 )
 scala_variants=( 2.10 2.11 )
 docker_entrypoint="docker-entrypoint.sh"
