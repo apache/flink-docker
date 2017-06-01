@@ -81,6 +81,9 @@ for scala_variant in "${scala_variants[@]}"; do
     # additional tags as relevant
     tags=( $full_version )
 
+    is_latest_version=
+    [ "$version" = "${versions[-1]}" ] && is_latest_version=1
+
     is_latest_hadoop=
     [ "$hadoop_variant" = "${hadoop_variants[-1]}" ] && is_latest_hadoop=1
 
@@ -93,8 +96,14 @@ for scala_variant in "${scala_variants[@]}"; do
         tags=(
             ${tags[@]}
             ${add_tags[@]/%/-scala_$scala_variant}
-            "scala_$scala_variant"
         )
+
+        if [ -n "$is_latest_version" ]; then
+            tags=(
+                ${tags[@]}
+                "scala_$scala_variant"
+            )
+        fi
     fi
 
     # For the latest supported Scala version, add tags that omit it
@@ -103,8 +112,14 @@ for scala_variant in "${scala_variants[@]}"; do
         tags=(
             ${tags[@]}
             ${add_tags[@]/%/-hadoop$hadoop_variant}
-            "hadoop$hadoop_variant"
         )
+
+        if [ -n "$is_latest_version" ]; then
+            tags=(
+                ${tags[@]}
+                "hadoop$hadoop_variant"
+            )
+        fi
     fi
 
     # For the latest supported Hadoop & Scala version, add tags that omit them
