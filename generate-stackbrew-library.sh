@@ -130,7 +130,7 @@ for scala_variant in "${scala_variants[@]}"; do
 
         tags=(
             ${tags[@]}
-            "$alias_tag"
+            $alias_tag
         )
     fi
 
