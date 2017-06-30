@@ -37,7 +37,7 @@ RUN set -ex; \
   rm -rf /var/lib/apt/lists/*
 
 # Configure Flink version
-ENV FLINK_VERSION=1.3.0 \
+ENV FLINK_VERSION=1.3.1 \
     HADOOP_VERSION=2 \
     SCALA_VERSION=2.10
 
