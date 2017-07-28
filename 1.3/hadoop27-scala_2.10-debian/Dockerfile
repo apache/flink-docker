@@ -33,7 +33,7 @@ RUN set -ex; \
 # Install dependencies
 RUN set -ex; \
   apt-get update; \
-  apt-get -y install libsnappy1; \
+  apt-get -y install libsnappy1v5; \
   rm -rf /var/lib/apt/lists/*
 
 # Configure Flink version
