@@ -18,8 +18,8 @@
 
 FROM openjdk:8-jre-alpine
 
-# Install dependencies, Bash, and su-exec for easy step-down from root
-RUN apk add --no-cache bash snappy 'su-exec>=0.2'
+# Install dependencies, bash and su-exec for easy step-down from root
+RUN apk add --no-cache bash libc6-compat snappy 'su-exec>=0.2'
 
 # Configure Flink version
 ENV FLINK_VERSION=%%FLINK_VERSION%% \
@@ -56,7 +56,7 @@ RUN set -ex; \
   export GNUPGHOME="$(mktemp -d)"; \
   gpg --import /KEYS; \
   gpg --batch --verify flink.tgz.asc flink.tgz; \
-  rm -r "$GNUPGHOME" flink.tgz.asc; \
+  rm -rf "$GNUPGHOME" flink.tgz.asc; \
   \
   tar -xf flink.tgz --strip-components=1; \
   rm flink.tgz; \
