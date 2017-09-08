@@ -16,25 +16,25 @@
 # limitations under the License.
 ###############################################################################
 
-FROM openjdk:8-jre
-
-# Grab gosu for easy step-down from root
-ENV GOSU_VERSION 1.7
-RUN set -ex; \
-  wget -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$(dpkg --print-architecture)"; \
-  wget -O /usr/local/bin/gosu.asc "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$(dpkg --print-architecture).asc"; \
-  export GNUPGHOME="$(mktemp -d)"; \
-  gpg --keyserver ha.pool.sks-keyservers.net --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4; \
-  gpg --batch --verify /usr/local/bin/gosu.asc /usr/local/bin/gosu; \
-  rm -r "$GNUPGHOME" /usr/local/bin/gosu.asc; \
-  chmod +x /usr/local/bin/gosu; \
-  gosu nobody true
+FROM openjdk:8-jre-slim
 
 # Install dependencies
 RUN set -ex; \
   apt-get update; \
-  apt-get -y install libsnappy1v5; \
+  apt-get -y install gnupg libsnappy1v5 wget; \
   rm -rf /var/lib/apt/lists/*
+
+# Grab gosu for easy step-down from root
+ENV GOSU_VERSION 1.7
+RUN set -ex; \
+  wget -nv -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$(dpkg --print-architecture)"; \
+  wget -nv -O /usr/local/bin/gosu.asc "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$(dpkg --print-architecture).asc"; \
+  export GNUPGHOME="$(mktemp -d)"; \
+  gpg --keyserver ha.pool.sks-keyservers.net --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4; \
+  gpg --batch --verify /usr/local/bin/gosu.asc /usr/local/bin/gosu; \
+  rm -rf "$GNUPGHOME" /usr/local/bin/gosu.asc; \
+  chmod +x /usr/local/bin/gosu; \
+  gosu nobody true
 
 # Configure Flink version
 ENV FLINK_VERSION=1.2.1 \
@@ -64,7 +64,7 @@ RUN set -ex; \
   export GNUPGHOME="$(mktemp -d)"; \
   gpg --import /KEYS; \
   gpg --batch --verify flink.tgz.asc flink.tgz; \
-  rm -r "$GNUPGHOME" flink.tgz.asc; \
+  rm -rf "$GNUPGHOME" flink.tgz.asc; \
   \
   tar -xf flink.tgz --strip-components=1; \
   rm flink.tgz; \
