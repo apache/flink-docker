@@ -21,7 +21,7 @@ FROM openjdk:8-jre
 # Install dependencies
 RUN set -ex; \
   apt-get update; \
-  apt-get -y install gnupg libsnappy1v5 wget; \
+  apt-get -y install libsnappy1v5; \
   rm -rf /var/lib/apt/lists/*
 
 # Grab gosu for easy step-down from root
