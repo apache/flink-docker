@@ -9,7 +9,7 @@
 set -eu
 
 declare -A aliases=(
-    [1.3]='latest'
+    [1.4]='latest'
 )
 
 self="$(basename "$BASH_SOURCE")"
@@ -18,8 +18,9 @@ cd "$(dirname "$(readlink -f "$BASH_SOURCE")")"
 versions=( */ )
 versions=( "${versions[@]%/}" )
 
+# Defaults, can vary between versions
 source_variants=( debian alpine )
-hadoop_variants=( 1 2 24 26 27 )
+hadoop_variants=( 2 24 26 27 )
 scala_variants=( 2.10 2.11 )
 
 # get the most recent commit which modified any of "$@"
@@ -61,6 +62,12 @@ join() {
 
 # Sorry for the style here, but it makes the nested code easier to read
 for version in "${versions[@]}"; do
+
+if [ "$version" = "1.4" ]; then
+    hadoop_variants=( 24 26 27 28 )
+    scala_variants=( 2.11 )
+fi
+
 for source_variant in "${source_variants[@]}"; do
 for hadoop_variant in "${hadoop_variants[@]}"; do
 for scala_variant in "${scala_variants[@]}"; do

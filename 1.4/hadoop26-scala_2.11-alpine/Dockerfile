@@ -22,8 +22,8 @@ FROM openjdk:8-jre-alpine
 RUN apk add --no-cache bash libc6-compat snappy 'su-exec>=0.2'
 
 # Configure Flink version
-ENV FLINK_VERSION=1.2.1 \
-    HADOOP_VERSION=24 \
+ENV FLINK_VERSION=1.4.0 \
+    HADOOP_VERSION=26 \
     SCALA_VERSION=2.11
 
 # Prepare environment
