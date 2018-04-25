@@ -68,7 +68,7 @@ docker_entrypoint="docker-entrypoint.sh"
 # fi
 
 if [ "$flink_release" = "1.4" ]; then
-    hadoop_variants=( 24 26 27 28 )
+    hadoop_variants=( 24 26 27 28 0 )
     scala_variants=( 2.11 )
 fi
 
@@ -86,13 +86,17 @@ echo -n >&2 "Generating Dockerfiles..."
 for source_variant in "${source_variants[@]}"; do
     for hadoop_variant in "${hadoop_variants[@]}"; do
         for scala_variant in "${scala_variants[@]}"; do
-            dir="$flink_release/hadoop$hadoop_variant-scala_$scala_variant-$source_variant"
+
+            hadoop_path=$([ "$hadoop_variant" != 0 ] && echo "hadoop${hadoop_variant}-" || echo "")
+            dir="$flink_release/${hadoop_path}scala_$scala_variant-$source_variant"
+
             mkdir "$dir"
             cp KEYS "$dir/KEYS"
             cp "$docker_entrypoint" "$dir/docker-entrypoint.sh"
+
             sed \
                 -e "s/%%FLINK_VERSION%%/$flink_version/" \
-                -e "s/%%HADOOP_VERSION%%/$hadoop_variant/" \
+                -e "s/%%HADOOP_VERSION%%/$hadoop_path/" \
                 -e "s/%%SCALA_VERSION%%/$scala_variant/" \
                 "Dockerfile-$source_variant.template" > "$dir/Dockerfile"
         done
