@@ -23,8 +23,7 @@ RUN apk add --no-cache bash libc6-compat snappy 'su-exec>=0.2'
 
 # Configure Flink version
 ENV FLINK_VERSION=1.3.3 \
-    HADOOP_VERSION=27 \
-    SCALA_VERSION=2.10
+    HADOOP_SCALA_VARIANT=hadoop27-scala_2.10
 
 # Prepare environment
 ENV FLINK_HOME=/opt/flink
@@ -33,7 +32,7 @@ RUN addgroup -S -g 9999 flink && \
     adduser -D -S -H -u 9999 -G flink -h $FLINK_HOME flink
 WORKDIR $FLINK_HOME
 
-ENV FLINK_URL_FILE_PATH=flink/flink-${FLINK_VERSION}/flink-${FLINK_VERSION}-bin-hadoop${HADOOP_VERSION}-scala_${SCALA_VERSION}.tgz
+ENV FLINK_URL_FILE_PATH=flink/flink-${FLINK_VERSION}/flink-${FLINK_VERSION}-bin-${HADOOP_SCALA_VARIANT}.tgz
 # Not all mirrors have the .asc files
 ENV FLINK_TGZ_URL=https://www.apache.org/dyn/closer.cgi?action=download&filename=${FLINK_URL_FILE_PATH} \
     FLINK_ASC_URL=https://www.apache.org/dist/${FLINK_URL_FILE_PATH}.asc

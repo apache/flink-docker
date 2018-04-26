@@ -16,35 +16,20 @@
 # limitations under the License.
 ###############################################################################
 
-FROM openjdk:8-jre
+FROM openjdk:8-jre-alpine
 
-# Install dependencies
-RUN set -ex; \
-  apt-get update; \
-  apt-get -y install libsnappy1v5; \
-  rm -rf /var/lib/apt/lists/*
-
-# Grab gosu for easy step-down from root
-ENV GOSU_VERSION 1.7
-RUN set -ex; \
-  wget -nv -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$(dpkg --print-architecture)"; \
-  wget -nv -O /usr/local/bin/gosu.asc "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$(dpkg --print-architecture).asc"; \
-  export GNUPGHOME="$(mktemp -d)"; \
-  gpg --keyserver ha.pool.sks-keyservers.net --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4; \
-  gpg --batch --verify /usr/local/bin/gosu.asc /usr/local/bin/gosu; \
-  rm -rf "$GNUPGHOME" /usr/local/bin/gosu.asc; \
-  chmod +x /usr/local/bin/gosu; \
-  gosu nobody true
+# Install dependencies, bash and su-exec for easy step-down from root
+RUN apk add --no-cache bash libc6-compat snappy 'su-exec>=0.2'
 
 # Configure Flink version
-ENV FLINK_VERSION=1.3.3 \
-    HADOOP_SCALA_VARIANT=hadoop26-scala_2.11
+ENV FLINK_VERSION=1.4.2 \
+    HADOOP_SCALA_VARIANT=scala_2.11
 
 # Prepare environment
 ENV FLINK_HOME=/opt/flink
 ENV PATH=$FLINK_HOME/bin:$PATH
-RUN groupadd --system --gid=9999 flink && \
-    useradd --system --home-dir $FLINK_HOME --uid=9999 --gid=flink flink
+RUN addgroup -S -g 9999 flink && \
+    adduser -D -S -H -u 9999 -G flink -h $FLINK_HOME flink
 WORKDIR $FLINK_HOME
 
 ENV FLINK_URL_FILE_PATH=flink/flink-${FLINK_VERSION}/flink-${FLINK_VERSION}-bin-${HADOOP_SCALA_VARIANT}.tgz
@@ -57,6 +42,13 @@ COPY KEYS /KEYS
 
 # Install Flink
 RUN set -ex; \
+  apk add --no-cache --virtual .build-deps \
+    ca-certificates \
+    gnupg \
+    openssl \
+    tar \
+  ; \
+  \
   wget -nv -O flink.tgz "$FLINK_TGZ_URL"; \
   wget -nv -O flink.tgz.asc "$FLINK_ASC_URL"; \
   \
@@ -67,6 +59,8 @@ RUN set -ex; \
   \
   tar -xf flink.tgz --strip-components=1; \
   rm flink.tgz; \
+  \
+  apk del .build-deps; \
   \
   chown -R flink:flink .;
 
