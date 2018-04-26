@@ -86,9 +86,13 @@ echo -n >&2 "Generating Dockerfiles..."
 for source_variant in "${source_variants[@]}"; do
     for hadoop_variant in "${hadoop_variants[@]}"; do
         for scala_variant in "${scala_variants[@]}"; do
+            if [ "$hadoop_variant" = "0" ]; then
+                hadoop_scala_variant="scala_${scala_variant}"
+            else
+                hadoop_scala_variant="hadoop${hadoop_variant}-scala_${scala_variant}"
+            fi
 
-            hadoop_path=$([ "$hadoop_variant" != 0 ] && echo "hadoop${hadoop_variant}-" || echo "")
-            dir="$flink_release/${hadoop_path}scala_$scala_variant-$source_variant"
+            dir="$flink_release/${hadoop_scala_variant}-${source_variant}"
 
             mkdir "$dir"
             cp KEYS "$dir/KEYS"
@@ -96,8 +100,7 @@ for source_variant in "${source_variants[@]}"; do
 
             sed \
                 -e "s/%%FLINK_VERSION%%/$flink_version/" \
-                -e "s/%%HADOOP_VERSION%%/$hadoop_path/" \
-                -e "s/%%SCALA_VERSION%%/$scala_variant/" \
+                -e "s/%%HADOOP_SCALA_VARIANT%%/$hadoop_scala_variant/" \
                 "Dockerfile-$source_variant.template" > "$dir/Dockerfile"
         done
     done
