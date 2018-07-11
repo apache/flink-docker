@@ -177,6 +177,7 @@ for scala_variant in "${scala_variants[@]}"; do
     # The tabs here are necessary for the heredoc to work right
     cat <<-EOE
 		Tags: $(join ', ' "${tags[@]}")
+		Architectures: amd64, arm64v8
 		GitCommit: $commit
 		Directory: $dir
 	EOE
