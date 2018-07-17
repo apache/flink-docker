@@ -45,6 +45,22 @@ dirCommit() {
     )
 }
 
+getArches() {
+    local repo="$1"; shift
+    local officialImagesUrl='https://github.com/docker-library/official-images/raw/master/library/'
+
+    eval "declare -g -A parentRepoToArches=( $(
+        find -name 'Dockerfile' -exec awk '
+                toupper($1) == "FROM" && $2 !~ /^('"$repo"'|scratch|microsoft\/[^:]+)(:|$)/ {
+                    print "'"$officialImagesUrl"'" $2
+                }
+            ' '{}' + \
+            | sort -u \
+            | xargs bashbrew cat --format '[{{ .RepoName }}:{{ .TagName }}]="{{ join " " .TagEntry.Architectures }}"'
+    ) )"
+}
+getArches 'flink'
+
 cat <<-EOH
 # this file is generated via https://github.com/docker-flink/docker-flink/blob/$(fileCommit "$self")/$self
 
@@ -92,6 +108,9 @@ for scala_variant in "${scala_variants[@]}"; do
     flink_version="$(git show "$commit":"$dir/Dockerfile" | awk '/ENV FLINK_VERSION=(.*) /{ split($2,a,"="); print a[2]}')"
 
     full_version=$flink_version-$hadoop_scala_variant
+
+    variantParent="$(awk 'toupper($1) == "FROM" { print $2 }' "$dir/Dockerfile")"
+    variantArches="${parentRepoToArches[$variantParent]}"
 
     # Start with the full version e.g. "1.2.0-hadoop27-scala_2.11" and add
     # additional tags as relevant
@@ -177,7 +196,7 @@ for scala_variant in "${scala_variants[@]}"; do
     # The tabs here are necessary for the heredoc to work right
     cat <<-EOE
 		Tags: $(join ', ' "${tags[@]}")
-		Architectures: amd64, arm64v8
+		Architectures: $(join ', ' $variantArches)
 		GitCommit: $commit
 		Directory: $dir
 	EOE
