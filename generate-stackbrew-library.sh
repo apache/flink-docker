@@ -76,19 +76,17 @@ join() {
     echo "${out#$sep}"
 }
 
+hadoop_variants=( 24 26 27 28 0 )
+scala_variants=( 2.11 )
+
 # Sorry for the style here, but it makes the nested code easier to read
 for version in "${versions[@]}"; do
 
-if [ "$version" = "1.4" ]; then
-    hadoop_variants=( 24 26 27 28 )
-    scala_variants=( 2.11 )
-elif [ "$version" = "1.5" ]; then
-    hadoop_variants=( 24 26 27 28 0 )
-    scala_variants=( 2.11 )
-elif [ "$flink_release" = "1.6" ]; then
-    hadoop_variants=( 24 26 27 28 0 )
-    scala_variants=( 2.11 )
-fi
+# Version-specific variants (example)
+# if [ "$flink_release" = "x.y" ]; then
+#     hadoop_variants=( 24 26 27 28 0 )
+#     scala_variants=( 2.10 2.11 )
+# fi
 
 for source_variant in "${source_variants[@]}"; do
 for hadoop_variant in "${hadoop_variants[@]}"; do
