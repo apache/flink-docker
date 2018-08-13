@@ -83,7 +83,7 @@ scala_variants=( 2.11 )
 for version in "${versions[@]}"; do
 
 # Version-specific variants (example)
-# if [ "$flink_release" = "x.y" ]; then
+# if [ "$version" = "x.y" ]; then
 #     hadoop_variants=( 24 26 27 28 0 )
 #     scala_variants=( 2.10 2.11 )
 # fi
