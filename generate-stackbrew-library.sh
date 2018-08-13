@@ -9,7 +9,7 @@
 set -eu
 
 declare -A aliases=(
-    [1.5]='latest'
+    [1.6]='latest'
 )
 
 self="$(basename "$BASH_SOURCE")"
@@ -83,6 +83,9 @@ if [ "$version" = "1.4" ]; then
     hadoop_variants=( 24 26 27 28 )
     scala_variants=( 2.11 )
 elif [ "$version" = "1.5" ]; then
+    hadoop_variants=( 24 26 27 28 0 )
+    scala_variants=( 2.11 )
+elif [ "$flink_release" = "1.6" ]; then
     hadoop_variants=( 24 26 27 28 0 )
     scala_variants=( 2.11 )
 fi

@@ -73,6 +73,9 @@ if [ "$flink_release" = "1.4" ]; then
 elif [ "$flink_release" = "1.5" ]; then
     hadoop_variants=( 24 26 27 28 0 )
     scala_variants=( 2.11 )
+elif [ "$flink_release" = "1.6" ]; then
+    hadoop_variants=( 24 26 27 28 0 )
+    scala_variants=( 2.11 )
 fi
 
 if [ -d "$flink_release" ]; then
