@@ -32,7 +32,7 @@ drop_privs_cmd() {
 }
 
 if [ "$1" = "help" ]; then
-    echo "Usage: $(basename "$0") (jobmanager|taskmanager|local|help)"
+    echo "Usage: $(basename "$0") (jobmanager|taskmanager|help)"
     exit 0
 elif [ "$1" = "jobmanager" ]; then
     echo "Starting Job Manager"
@@ -41,7 +41,7 @@ elif [ "$1" = "jobmanager" ]; then
     echo "query.server.port: 6125" >> "$FLINK_HOME/conf/flink-conf.yaml"
 
     echo "config file: " && grep '^[^\n#]' "$FLINK_HOME/conf/flink-conf.yaml"
-    exec $(drop_privs_cmd) flink "$FLINK_HOME/bin/jobmanager.sh" start-foreground cluster
+    exec $(drop_privs_cmd) flink "$FLINK_HOME/bin/jobmanager.sh" start-foreground
 elif [ "$1" = "taskmanager" ]; then
     TASK_MANAGER_NUMBER_OF_TASK_SLOTS=${TASK_MANAGER_NUMBER_OF_TASK_SLOTS:-$(grep -c ^processor /proc/cpuinfo)}
 
@@ -53,9 +53,6 @@ elif [ "$1" = "taskmanager" ]; then
     echo "Starting Task Manager"
     echo "config file: " && grep '^[^\n#]' "$FLINK_HOME/conf/flink-conf.yaml"
     exec $(drop_privs_cmd) flink "$FLINK_HOME/bin/taskmanager.sh" start-foreground
-elif [ "$1" = "local" ]; then
-    echo "Starting local cluster"
-    exec $(drop_privs_cmd) flink "$FLINK_HOME/bin/jobmanager.sh" start-foreground local
 fi
 
 exec "$@"
