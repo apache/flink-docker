@@ -11,7 +11,8 @@ CURL_TIMEOUT=1
 CURL_COOLDOWN=1
 CURL_MAX_TRIES=30
 CURL_ENDPOINT=localhost:8081/overview
-NETWORK_NAME=docker-flink-test
+IMAGE_REPO=docker-flink-test
+NETWORK_NAME=docker-flink-test-net
 
 function image_tag() {
     local dockerfile="$1"
@@ -25,7 +26,7 @@ function image_tag() {
 function image_name() {
     local image_tag="$1"
 
-    echo "docker-flink-test:${image_tag}"
+    echo "${IMAGE_REPO}:${image_tag}"
 }
 
 function build_image() {
@@ -149,7 +150,7 @@ function test_image() {
 }
 
 function create_network() {
-    docker network create docker-flink-test > /dev/null
+    docker network create "$NETWORK_NAME" > /dev/null
 }
 
 # Find and kill any remaining containers attached to the network, then remove
