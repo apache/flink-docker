@@ -55,6 +55,7 @@ RUN set -ex; \
   export GNUPGHOME="$(mktemp -d)"; \
   gpg --import /KEYS; \
   gpg --batch --verify flink.tgz.asc flink.tgz; \
+  gpgconf --kill all; \
   rm -rf "$GNUPGHOME" flink.tgz.asc; \
   \
   tar -xf flink.tgz --strip-components=1; \
