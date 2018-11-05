@@ -1,6 +1,8 @@
 docker-flink
 ============
 
+[![Build Status](https://travis-ci.org/docker-flink/docker-flink.svg?branch=master)](https://travis-ci.org/docker-flink/docker-flink)
+
 Docker packaging for Apache Flink
 
 Use `add-version.sh` to rebuild the Dockerfiles and all variants for a
