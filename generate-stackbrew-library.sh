@@ -15,7 +15,8 @@ declare -A aliases=(
 self="$(basename "$BASH_SOURCE")"
 cd "$(dirname "$(readlink -f "$BASH_SOURCE")")"
 
-versions=( */ )
+# Identify directories matching '?.?' (e.g. '1.7') and remove trailing slashes
+versions=( ?.?/ )
 versions=( "${versions[@]%/}" )
 
 # Defaults, can vary between versions
