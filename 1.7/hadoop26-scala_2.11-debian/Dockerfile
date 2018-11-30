@@ -35,7 +35,7 @@ RUN set -ex; \
                           keyserver.ubuntu.com \
                           hkp://keyserver.ubuntu.com:80 \
                           pgp.mit.edu) ; do \
-      gpg --keyserver "$server" --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4 && break || : ; \
+      gpg --batch --keyserver "$server" --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4 && break || : ; \
   done && \
   gpg --batch --verify /usr/local/bin/gosu.asc /usr/local/bin/gosu; \
   gpgconf --kill all; \
@@ -68,7 +68,7 @@ RUN set -ex; \
   wget -nv -O flink.tgz.asc "$FLINK_ASC_URL"; \
   \
   export GNUPGHOME="$(mktemp -d)"; \
-  gpg --import /KEYS; \
+  gpg --batch --import /KEYS; \
   gpg --batch --verify flink.tgz.asc flink.tgz; \
   gpgconf --kill all; \
   rm -rf "$GNUPGHOME" flink.tgz.asc; \

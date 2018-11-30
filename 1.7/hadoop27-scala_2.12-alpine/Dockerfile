@@ -53,7 +53,7 @@ RUN set -ex; \
   wget -nv -O flink.tgz.asc "$FLINK_ASC_URL"; \
   \
   export GNUPGHOME="$(mktemp -d)"; \
-  gpg --import /KEYS; \
+  gpg --batch --import /KEYS; \
   gpg --batch --verify flink.tgz.asc flink.tgz; \
   gpgconf --kill all; \
   rm -rf "$GNUPGHOME" flink.tgz.asc; \
