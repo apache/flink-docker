@@ -19,11 +19,6 @@ cd "$(dirname "$(readlink -f "$BASH_SOURCE")")"
 versions=( ?.?/ )
 versions=( "${versions[@]%/}" )
 
-# Defaults, can vary between versions
-source_variants=( debian alpine )
-hadoop_variants=( 2 24 26 27 )
-scala_variants=( 2.10 2.11 )
-
 # get the most recent commit which modified any of "$@"
 fileCommit() {
     git log -1 --format='format:%H' HEAD -- "$@"
@@ -77,17 +72,23 @@ join() {
     echo "${out#$sep}"
 }
 
-hadoop_variants=( 24 26 27 28 0 )
-scala_variants=( 2.11 )
-
 # Sorry for the style here, but it makes the nested code easier to read
 for version in "${versions[@]}"; do
+
+# Defaults, can vary between versions
+source_variants=( debian alpine )
+hadoop_variants=( 24 26 27 28 0 )
+scala_variants=( 2.11 )
 
 # Version-specific variants (example)
 # if [ "$version" = "x.y" ]; then
 #     hadoop_variants=( 24 26 27 28 0 )
 #     scala_variants=( 2.10 2.11 )
 # fi
+
+if [ "$version" = "1.7" ]; then
+    scala_variants=( 2.11 2.12 )
+fi
 
 for source_variant in "${source_variants[@]}"; do
 for hadoop_variant in "${hadoop_variants[@]}"; do
