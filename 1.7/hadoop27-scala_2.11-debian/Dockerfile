@@ -44,7 +44,7 @@ RUN set -ex; \
   gosu nobody true
 
 # Configure Flink version
-ENV FLINK_VERSION=1.7.0 \
+ENV FLINK_VERSION=1.7.1 \
     HADOOP_SCALA_VARIANT=hadoop27-scala_2.11
 
 # Prepare environment
