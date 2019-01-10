@@ -46,12 +46,36 @@ function run_jobmanager() {
     local image_tag="$(image_tag "$dockerfile")"
     local image_name="$(image_name "$image_tag")"
 
+    echo >&2 "Running ${image_tag} jobmanager..."
+
     # Prints container ID
     docker run \
         --rm \
         --detach \
         --name "jobmanager" \
         --network "$NETWORK_NAME" \
+        --publish 6123:6123 \
+        --publish 8081:8081 \
+        -e JOB_MANAGER_RPC_ADDRESS="jobmanager" \
+        "$image_name" \
+        jobmanager
+}
+
+function run_jobmanager_non_root() {
+    local dockerfile="$1"
+
+    local image_tag="$(image_tag "$dockerfile")"
+    local image_name="$(image_name "$image_tag")"
+
+    echo >&2 "Running ${image_tag} jobmanager as non-root..."
+
+    # Prints container ID
+    docker run \
+        --rm \
+        --detach \
+        --name "jobmanager" \
+        --network "$NETWORK_NAME" \
+        --user 1234 \
         --publish 6123:6123 \
         --publish 8081:8081 \
         -e JOB_MANAGER_RPC_ADDRESS="jobmanager" \
@@ -102,6 +126,8 @@ function run_taskmanager() {
     local image_tag="$(image_tag "$dockerfile")"
     local image_name="$(image_name "$image_tag")"
 
+    echo >&2 "Running ${image_tag} taskmanager..."
+
     # Prints container ID
     docker run \
         --rm \
@@ -113,8 +139,29 @@ function run_taskmanager() {
         taskmanager
 }
 
+function run_taskmanager_non_root() {
+    local dockerfile="$1"
+
+    local image_tag="$(image_tag "$dockerfile")"
+    local image_name="$(image_name "$image_tag")"
+
+    echo >&2 "Running ${image_tag} taskmanager as non-root..."
+
+    # Prints container ID
+    docker run \
+        --rm \
+        --detach \
+        --name "taskmanager" \
+        --network "$NETWORK_NAME" \
+        --user 1234 \
+        -e JOB_MANAGER_RPC_ADDRESS="jobmanager" \
+        "$image_name" \
+        taskmanager
+}
+
 function test_image() {
     local dockerfile="$1"
+    local uid="$2"
 
     local image_tag="$(image_tag "$dockerfile")"
 
@@ -144,8 +191,7 @@ function test_image() {
         fi
     
         sleep "$CURL_COOLDOWN"
-    done
-
+    done 
     echo >&2 "${image_tag} taskmanager connected."
 }
 
@@ -165,24 +211,75 @@ function cleanup() {
         echo >&2 " done."
     fi
 
-    docker network rm "$NETWORK_NAME" > /dev/null
+    docker network rm "$NETWORK_NAME" > /dev/null 2>&1 || true
 }
 
-function build_images() {
+# For each image, run a jobmanager and taskmanager and verify they start up and connect to each
+# other successfully.
+function smoke_test_all_images() {
     create_network
-    trap cleanup EXIT
+    trap cleanup EXIT RETURN
 
     local jobmanager_container_id
     local taskmanager_container_id
+    local dockerfiles
+    dockerfiles="$(ls */*/Dockerfile)"
 
-    for dockerfile in */*/Dockerfile; do
+    echo >&2 "==> Test all images"
+
+    for dockerfile in $dockerfiles; do
         build_image "$dockerfile"
         jobmanager_container_id="$(run_jobmanager "$dockerfile")"
-        wait_for_jobmanager "$dockerfile"
         taskmanager_container_id="$(run_taskmanager "$dockerfile")"
+        wait_for_jobmanager "$dockerfile"
         test_image "$dockerfile"
         docker kill "$jobmanager_container_id" "$taskmanager_container_id" > /dev/null
     done
 }
 
-build_images
+# Same as smoke_test_all_images, but test only the last image alphabetically (presumed to be the
+# most recent).
+function smoke_test_one_image() {
+    create_network
+    trap cleanup EXIT RETURN
+
+    local jobmanager_container_id
+    local taskmanager_container_id
+    local dockerfiles
+    dockerfiles="$dockerfiles $(ls */*/Dockerfile | tail -n 1)"
+
+    echo >&2 "==> Test one image"
+
+    for dockerfile in $dockerfiles; do
+      build_image "$dockerfile"
+      jobmanager_container_id="$(run_jobmanager "$dockerfile")"
+      taskmanager_container_id="$(run_taskmanager "$dockerfile")"
+      wait_for_jobmanager "$dockerfile"
+      test_image "$dockerfile"
+      docker kill "$jobmanager_container_id" "$taskmanager_container_id" > /dev/null
+    done
+}
+
+# Similar to smoke_test_one_image, but test one debian image and one alpine image running as a
+# non-root user.
+function smoke_test_non_root() {
+    create_network
+    trap cleanup EXIT RETURN
+
+    local jobmanager_container_id
+    local taskmanager_container_id
+    local dockerfiles
+    dockerfiles="$dockerfiles $(ls */*-debian/Dockerfile | tail -n 1)"
+    dockerfiles="$dockerfiles $(ls */*-alpine/Dockerfile | tail -n 1)"
+
+    echo >&2 "==> Test images running as non-root"
+
+    for dockerfile in $dockerfiles; do
+      build_image "$dockerfile"
+      jobmanager_container_id="$(run_jobmanager_non_root "$dockerfile")"
+      taskmanager_container_id="$(run_taskmanager_non_root "$dockerfile")"
+      wait_for_jobmanager "$dockerfile"
+      test_image "$dockerfile"
+      docker kill "$jobmanager_container_id" "$taskmanager_container_id" > /dev/null
+    done
+}

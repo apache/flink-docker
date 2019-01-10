@@ -4,4 +4,4 @@ services:
 - docker
 
 script:
-- testing/smoke_test_all_images.sh
+- testing/run_travis_tests.sh
