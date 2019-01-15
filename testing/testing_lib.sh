@@ -15,36 +15,43 @@ IMAGE_REPO=docker-flink-test
 NETWORK_NAME=docker-flink-test-net
 
 function image_tag() {
-    local dockerfile="$1"
+    local dockerfile
+    dockerfile="$1"
 
-    local variant="$(basename "$(dirname "$dockerfile")")"
-    local minor_version="$(dirname "$(dirname "$dockerfile")")"
+    local variant minor_version
+    variant="$(basename "$(dirname "$dockerfile")")"
+    minor_version="$(basename "$(dirname "$(dirname "$dockerfile")")")"
 
     echo "${minor_version}-${variant}"
 }
 
 function image_name() {
-    local image_tag="$1"
+    local image_tag
+    image_tag="$1"
 
     echo "${IMAGE_REPO}:${image_tag}"
 }
 
 function build_image() {
-    local dockerfile="$1"
+    local dockerfile
+    dockerfile="$1"
 
-    local image_tag="$(image_tag "$dockerfile")"
-    local image_name="$(image_name "$image_tag")"
-    local dockerfile_dir="$(dirname "$dockerfile")"
+    local image_tag image_name dockerfile_dir
+    image_tag="$(image_tag "$dockerfile")"
+    image_name="$(image_name "$image_tag")"
+    dockerfile_dir="$(dirname "$dockerfile")"
 
     echo >&2 "===> Building ${image_tag} image..."
     docker build -t "$image_name" "$dockerfile_dir"
 }
 
 function run_jobmanager() {
-    local dockerfile="$1"
+    local dockerfile
+    dockerfile="$1"
 
-    local image_tag="$(image_tag "$dockerfile")"
-    local image_name="$(image_name "$image_tag")"
+    local image_tag image_name
+    image_tag="$(image_tag "$dockerfile")"
+    image_name="$(image_name "$image_tag")"
 
     echo >&2 "===> Starting ${image_tag} jobmanager..."
 
@@ -62,10 +69,12 @@ function run_jobmanager() {
 }
 
 function run_jobmanager_non_root() {
-    local dockerfile="$1"
+    local dockerfile
+    dockerfile="$1"
 
-    local image_tag="$(image_tag "$dockerfile")"
-    local image_name="$(image_name "$image_tag")"
+    local image_tag image_name
+    image_tag="$(image_tag "$dockerfile")"
+    image_name="$(image_name "$image_tag")"
 
     echo >&2 "===> Starting ${image_tag} jobmanager as non-root..."
 
@@ -84,9 +93,11 @@ function run_jobmanager_non_root() {
 }
 
 function wait_for_jobmanager() {
-    local dockerfile="$1"
+    local dockerfile
+    dockerfile="$1"
 
-    local image_tag="$(image_tag "$dockerfile")"
+    local image_tag
+    image_tag="$(image_tag "$dockerfile")"
 
     i=0
     echo >&2 "===> Waiting for ${image_tag} jobmanager to be ready..."
@@ -121,10 +132,12 @@ function wait_for_jobmanager() {
 }
 
 function run_taskmanager() {
-    local dockerfile="$1"
+    local dockerfile
+    dockerfile="$1"
 
-    local image_tag="$(image_tag "$dockerfile")"
-    local image_name="$(image_name "$image_tag")"
+    local image_tag image_name
+    image_tag="$(image_tag "$dockerfile")"
+    image_name="$(image_name "$image_tag")"
 
     echo >&2 "===> Starting ${image_tag} taskmanager..."
 
@@ -140,10 +153,12 @@ function run_taskmanager() {
 }
 
 function run_taskmanager_non_root() {
-    local dockerfile="$1"
+    local dockerfile
+    dockerfile="$1"
 
-    local image_tag="$(image_tag "$dockerfile")"
-    local image_name="$(image_name "$image_tag")"
+    local image_tag image_name
+    image_tag="$(image_tag "$dockerfile")"
+    image_name="$(image_name "$image_tag")"
 
     echo >&2 "===> Starting ${image_tag} taskmanager as non-root..."
 
@@ -160,10 +175,11 @@ function run_taskmanager_non_root() {
 }
 
 function test_image() {
-    local dockerfile="$1"
-    local uid="$2"
+    local dockerfile
+    dockerfile="$1"
 
-    local image_tag="$(image_tag "$dockerfile")"
+    local image_tag
+    image_tag="$(image_tag "$dockerfile")"
 
     i=0
     echo >&2 "===> Waiting for ${image_tag} taskmanager to connect..."
@@ -172,7 +188,8 @@ function test_image() {
     
         set +e
     
-        local overview="$(curl \
+        local overview
+        overview="$(curl \
             --silent \
             --max-time "$CURL_TIMEOUT" \
             "$CURL_ENDPOINT")"
@@ -202,12 +219,12 @@ function create_network() {
 # Find and kill any remaining containers attached to the network, then remove
 # the network.
 function cleanup() {
-    local containers="$(docker ps --quiet --filter network="$NETWORK_NAME")"
+    local containers
+    mapfile -t containers < <(docker ps --quiet --filter network="$NETWORK_NAME")
 
-    if [ -n "$containers" ]; then
-        local num_containers="$(echo "$containers" | awk 'END{print NR}')"
-        echo >&2 -n "==> Killing ${num_containers} orphaned container(s)..."
-        docker kill $containers > /dev/null
+    if [ "${#containers[@]}" -gt 0 ]; then
+        echo >&2 -n "==> Killing ${#containers[@]} orphaned container(s)..."
+        docker kill "${containers[@]}" > /dev/null
         echo >&2 " done."
     fi
 
@@ -223,7 +240,7 @@ function smoke_test_all_images() {
     local jobmanager_container_id
     local taskmanager_container_id
     local dockerfiles
-    dockerfiles="$(ls */*/Dockerfile)"
+    dockerfiles="$(ls ./*/*/Dockerfile)"
 
     echo >&2 "==> Test all images"
 
@@ -246,7 +263,7 @@ function smoke_test_one_image() {
     local jobmanager_container_id
     local taskmanager_container_id
     local dockerfiles
-    dockerfiles="$dockerfiles $(ls */*/Dockerfile | tail -n 1)"
+    dockerfiles="$dockerfiles $(ls ./*/*/Dockerfile | tail -n 1)"
 
     echo >&2 "==> Test one image"
 
@@ -269,8 +286,8 @@ function smoke_test_non_root() {
     local jobmanager_container_id
     local taskmanager_container_id
     local dockerfiles
-    dockerfiles="$dockerfiles $(ls */*-debian/Dockerfile | tail -n 1)"
-    dockerfiles="$dockerfiles $(ls */*-alpine/Dockerfile | tail -n 1)"
+    dockerfiles="$dockerfiles $(ls ./*/*-debian/Dockerfile | tail -n 1)"
+    dockerfiles="$dockerfiles $(ls ./*/*-alpine/Dockerfile | tail -n 1)"
 
     echo >&2 "==> Test images running as non-root"
 
