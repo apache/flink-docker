@@ -36,7 +36,7 @@ function build_image() {
     local image_name="$(image_name "$image_tag")"
     local dockerfile_dir="$(dirname "$dockerfile")"
 
-    echo >&2 "Building ${image_tag} image..."
+    echo >&2 "===> Building ${image_tag} image..."
     docker build -t "$image_name" "$dockerfile_dir"
 }
 
@@ -46,7 +46,7 @@ function run_jobmanager() {
     local image_tag="$(image_tag "$dockerfile")"
     local image_name="$(image_name "$image_tag")"
 
-    echo >&2 "Running ${image_tag} jobmanager..."
+    echo >&2 "===> Starting ${image_tag} jobmanager..."
 
     # Prints container ID
     docker run \
@@ -67,7 +67,7 @@ function run_jobmanager_non_root() {
     local image_tag="$(image_tag "$dockerfile")"
     local image_name="$(image_name "$image_tag")"
 
-    echo >&2 "Running ${image_tag} jobmanager as non-root..."
+    echo >&2 "===> Starting ${image_tag} jobmanager as non-root..."
 
     # Prints container ID
     docker run \
@@ -89,7 +89,7 @@ function wait_for_jobmanager() {
     local image_tag="$(image_tag "$dockerfile")"
 
     i=0
-    echo >&2 "Waiting for ${image_tag} jobmanager to be ready..."
+    echo >&2 "===> Waiting for ${image_tag} jobmanager to be ready..."
     while true; do
         i=$((i+1))
     
@@ -110,14 +110,14 @@ function wait_for_jobmanager() {
         fi
     
         if [ "$i" -gt "$CURL_MAX_TRIES" ]; then
-            echo >&2 "\$CURL_MAX_TRIES exceeded waiting for jobmanager to be ready"
+            echo >&2 "===> \$CURL_MAX_TRIES exceeded waiting for jobmanager to be ready"
             return 1
         fi
 
         sleep "$CURL_COOLDOWN"
     done
 
-    echo >&2 "${image_tag} jobmanager is ready."
+    echo >&2 "===> ${image_tag} jobmanager is ready."
 }
 
 function run_taskmanager() {
@@ -126,7 +126,7 @@ function run_taskmanager() {
     local image_tag="$(image_tag "$dockerfile")"
     local image_name="$(image_name "$image_tag")"
 
-    echo >&2 "Running ${image_tag} taskmanager..."
+    echo >&2 "===> Starting ${image_tag} taskmanager..."
 
     # Prints container ID
     docker run \
@@ -145,7 +145,7 @@ function run_taskmanager_non_root() {
     local image_tag="$(image_tag "$dockerfile")"
     local image_name="$(image_name "$image_tag")"
 
-    echo >&2 "Running ${image_tag} taskmanager as non-root..."
+    echo >&2 "===> Starting ${image_tag} taskmanager as non-root..."
 
     # Prints container ID
     docker run \
@@ -166,7 +166,7 @@ function test_image() {
     local image_tag="$(image_tag "$dockerfile")"
 
     i=0
-    echo >&2 "Waiting for ${image_tag} taskmanager to connect..."
+    echo >&2 "===> Waiting for ${image_tag} taskmanager to connect..."
     while true; do
         i=$((i+1))
     
@@ -186,13 +186,13 @@ function test_image() {
         fi
     
         if [ "$i" -gt "$CURL_MAX_TRIES" ]; then
-            echo >&2 "\$CURL_MAX_TRIES exceeded for taskmanager to connect"
+            echo >&2 "===> \$CURL_MAX_TRIES exceeded for taskmanager to connect"
             return 1
         fi
     
         sleep "$CURL_COOLDOWN"
     done 
-    echo >&2 "${image_tag} taskmanager connected."
+    echo >&2 "===> ${image_tag} taskmanager connected."
 }
 
 function create_network() {
@@ -206,7 +206,7 @@ function cleanup() {
 
     if [ -n "$containers" ]; then
         local num_containers="$(echo "$containers" | awk 'END{print NR}')"
-        echo >&2 -n "Killing ${num_containers} orphaned container(s)..."
+        echo >&2 -n "==> Killing ${num_containers} orphaned container(s)..."
         docker kill $containers > /dev/null
         echo >&2 " done."
     fi
@@ -251,12 +251,12 @@ function smoke_test_one_image() {
     echo >&2 "==> Test one image"
 
     for dockerfile in $dockerfiles; do
-      build_image "$dockerfile"
-      jobmanager_container_id="$(run_jobmanager "$dockerfile")"
-      taskmanager_container_id="$(run_taskmanager "$dockerfile")"
-      wait_for_jobmanager "$dockerfile"
-      test_image "$dockerfile"
-      docker kill "$jobmanager_container_id" "$taskmanager_container_id" > /dev/null
+        build_image "$dockerfile"
+        jobmanager_container_id="$(run_jobmanager "$dockerfile")"
+        taskmanager_container_id="$(run_taskmanager "$dockerfile")"
+        wait_for_jobmanager "$dockerfile"
+        test_image "$dockerfile"
+        docker kill "$jobmanager_container_id" "$taskmanager_container_id" > /dev/null
     done
 }
 
@@ -275,11 +275,13 @@ function smoke_test_non_root() {
     echo >&2 "==> Test images running as non-root"
 
     for dockerfile in $dockerfiles; do
-      build_image "$dockerfile"
-      jobmanager_container_id="$(run_jobmanager_non_root "$dockerfile")"
-      taskmanager_container_id="$(run_taskmanager_non_root "$dockerfile")"
-      wait_for_jobmanager "$dockerfile"
-      test_image "$dockerfile"
-      docker kill "$jobmanager_container_id" "$taskmanager_container_id" > /dev/null
+        build_image "$dockerfile"
+        jobmanager_container_id="$(run_jobmanager_non_root "$dockerfile")"
+        taskmanager_container_id="$(run_taskmanager_non_root "$dockerfile")"
+        wait_for_jobmanager "$dockerfile"
+        test_image "$dockerfile"
+        docker kill "$jobmanager_container_id" "$taskmanager_container_id" > /dev/null
     done
 }
+
+# vim: ts=4 sw=4 et
