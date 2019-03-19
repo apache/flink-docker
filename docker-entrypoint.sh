@@ -23,12 +23,15 @@ JOB_MANAGER_RPC_ADDRESS=${JOB_MANAGER_RPC_ADDRESS:-$(hostname -f)}
 CONF_FILE="$FLINK_HOME/conf/flink-conf.yaml"
 
 drop_privs_cmd() {
-    if [ -x /sbin/su-exec ]; then
+    if [ $(id -u) != 0 ]; then
+        # Don't need to drop privs if EUID != 0
+        return
+    elif [ -x /sbin/su-exec ]; then
         # Alpine
-        echo su-exec
+        echo su-exec flink
     else
         # Others
-        echo gosu
+        echo gosu flink
     fi
 }
 
@@ -58,7 +61,7 @@ elif [ "$1" = "jobmanager" ]; then
     fi
 
     echo "config file: " && grep '^[^\n#]' ${CONF_FILE}
-    exec $(drop_privs_cmd) flink "$FLINK_HOME/bin/jobmanager.sh" start-foreground "$@"
+    exec $(drop_privs_cmd) "$FLINK_HOME/bin/jobmanager.sh" start-foreground "$@"
 elif [ "$1" = "taskmanager" ]; then
     TASK_MANAGER_NUMBER_OF_TASK_SLOTS=${TASK_MANAGER_NUMBER_OF_TASK_SLOTS:-$(grep -c ^processor /proc/cpuinfo)}
 
@@ -88,7 +91,7 @@ elif [ "$1" = "taskmanager" ]; then
 
     echo "Starting Task Manager"
     echo "config file: " && grep '^[^\n#]' ${CONF_FILE}
-    exec $(drop_privs_cmd) flink "$FLINK_HOME/bin/taskmanager.sh" start-foreground
+    exec $(drop_privs_cmd) "$FLINK_HOME/bin/taskmanager.sh" start-foreground
 fi
 
 exec "$@"

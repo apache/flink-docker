@@ -67,6 +67,10 @@ docker_entrypoint="docker-entrypoint.sh"
 #     scala_variants=( 2.10 2.11 2.12 )
 # fi
 
+if [ "$flink_release" = "1.7" ]; then
+    scala_variants=( 2.11 2.12 )
+fi
+
 if [ -d "$flink_release" ]; then
     error "Directory $flink_release already exists; delete before continuing"
 fi

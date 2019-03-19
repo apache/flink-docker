@@ -22,7 +22,7 @@ FROM openjdk:8-jre-alpine
 RUN apk add --no-cache bash libc6-compat snappy 'su-exec>=0.2'
 
 # Configure Flink version
-ENV FLINK_VERSION=1.6.2 \
+ENV FLINK_VERSION=1.6.4 \
     HADOOP_SCALA_VARIANT=hadoop26-scala_2.11
 
 # Prepare environment
@@ -53,7 +53,7 @@ RUN set -ex; \
   wget -nv -O flink.tgz.asc "$FLINK_ASC_URL"; \
   \
   export GNUPGHOME="$(mktemp -d)"; \
-  gpg --import /KEYS; \
+  gpg --batch --import /KEYS; \
   gpg --batch --verify flink.tgz.asc flink.tgz; \
   gpgconf --kill all; \
   rm -rf "$GNUPGHOME" flink.tgz.asc; \
