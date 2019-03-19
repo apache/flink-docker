@@ -43,19 +43,19 @@ elif [ "$1" = "jobmanager" ]; then
     echo "Starting Job Manager"
 
     if grep -E "^jobmanager\.rpc\.address:.*" "${CONF_FILE}"; then
-        sed -i -e "s/jobmanager.rpc.address:*/jobmanager.rpc.address: ${JOB_MANAGER_RPC_ADDRESS}/g" "${CONF_FILE}"
+        sed -i -e "s/jobmanager\.rpc\.address:.*/jobmanager.rpc.address: ${JOB_MANAGER_RPC_ADDRESS}/g" "${CONF_FILE}"
     else
         echo "jobmanager.rpc.address: ${JOB_MANAGER_RPC_ADDRESS}" >> "${CONF_FILE}"
     fi
 
     if grep -E "^blob\.server\.port:.*" "${CONF_FILE}"; then
-        sed -i -e "s/blob.server.port:*/blob.server.port: 6124/g" "${CONF_FILE}"
+        sed -i -e "s/blob\.server\.port:.*/blob.server.port: 6124/g" "${CONF_FILE}"
     else
         echo "blob.server.port: 6124" >> "${CONF_FILE}"
     fi
 
     if grep -E "^query\.server\.port:.*" "${CONF_FILE}"; then
-        sed -i -e "s/query.server.port:*/query.server.port: 6125/g" "${CONF_FILE}"
+        sed -i -e "s/query\.server\.port:.*/query.server.port: 6125/g" "${CONF_FILE}"
     else
         echo "query.server.port: 6125" >> "${CONF_FILE}"
     fi
@@ -66,25 +66,25 @@ elif [ "$1" = "taskmanager" ]; then
     TASK_MANAGER_NUMBER_OF_TASK_SLOTS=${TASK_MANAGER_NUMBER_OF_TASK_SLOTS:-$(grep -c ^processor /proc/cpuinfo)}
 
     if grep -E "^jobmanager\.rpc\.address:.*" "${CONF_FILE}"; then
-        sed -i -e "s/jobmanager.rpc.address:*/jobmanager.rpc.address: ${JOB_MANAGER_RPC_ADDRESS}/g" "${CONF_FILE}"
+        sed -i -e "s/jobmanager\.rpc\.address:.*/jobmanager.rpc.address: ${JOB_MANAGER_RPC_ADDRESS}/g" "${CONF_FILE}"
     else
         echo "jobmanager.rpc.address: ${JOB_MANAGER_RPC_ADDRESS}" >> "${CONF_FILE}"
     fi
 
     if grep -E "^taskmanager\.numberOfTaskSlots:.*" "${CONF_FILE}"; then
-        sed -i -e "s/taskmanager.numberOfTaskSlots:*/taskmanager.numberOfTaskSlots: ${TASK_MANAGER_NUMBER_OF_TASK_SLOTS}/g" "${CONF_FILE}"
+        sed -i -e "s/taskmanager\.numberOfTaskSlots:.*/taskmanager.numberOfTaskSlots: ${TASK_MANAGER_NUMBER_OF_TASK_SLOTS}/g" "${CONF_FILE}"
     else
         echo "taskmanager.numberOfTaskSlots: ${TASK_MANAGER_NUMBER_OF_TASK_SLOTS}" >> "${CONF_FILE}"
     fi
 
     if grep -E "^blob\.server\.port:.*" "${CONF_FILE}"; then
-        sed -i -e "s/blob.server.port:*/blob.server.port: 6124/g" "${CONF_FILE}"
+        sed -i -e "s/blob\.server\.port:.*/blob.server.port: 6124/g" "${CONF_FILE}"
     else
         echo "blob.server.port: 6124" >> "${CONF_FILE}"
     fi
 
     if grep -E "^query\.server\.port:.*" "${CONF_FILE}"; then
-        sed -i -e "s/query.server.port:*/query.server.port: 6125/g" "${CONF_FILE}"
+        sed -i -e "s/query\.server\.port:.*/query.server.port: 6125/g" "${CONF_FILE}"
     else
         echo "query.server.port: 6125" >> "${CONF_FILE}"
     fi
