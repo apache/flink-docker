@@ -20,6 +20,7 @@
 
 # If unspecified, the hostname of the container is taken as the JobManager address
 JOB_MANAGER_RPC_ADDRESS=${JOB_MANAGER_RPC_ADDRESS:-$(hostname -f)}
+CONF_FILE="${FLINK_HOME}/conf/flink-conf.yaml"
 
 drop_privs_cmd() {
     if [ $(id -u) != 0 ]; then
@@ -40,23 +41,59 @@ if [ "$1" = "help" ]; then
 elif [ "$1" = "jobmanager" ]; then
     shift 1
     echo "Starting Job Manager"
-    sed -i -e "s/jobmanager.rpc.address: localhost/jobmanager.rpc.address: ${JOB_MANAGER_RPC_ADDRESS}/g" "$FLINK_HOME/conf/flink-conf.yaml"
-    echo "blob.server.port: 6124" >> "$FLINK_HOME/conf/flink-conf.yaml"
-    echo "query.server.port: 6125" >> "$FLINK_HOME/conf/flink-conf.yaml"
 
-    echo "config file: " && grep '^[^\n#]' "$FLINK_HOME/conf/flink-conf.yaml"
+    if grep -E "^jobmanager\.rpc\.address:.*" "${CONF_FILE}" > /dev/null; then
+        sed -i -e "s/jobmanager\.rpc\.address:.*/jobmanager.rpc.address: ${JOB_MANAGER_RPC_ADDRESS}/g" "${CONF_FILE}"
+    else
+        echo "jobmanager.rpc.address: ${JOB_MANAGER_RPC_ADDRESS}" >> "${CONF_FILE}"
+    fi
+
+    if grep -E "^blob\.server\.port:.*" "${CONF_FILE}" > /dev/null; then
+        sed -i -e "s/blob\.server\.port:.*/blob.server.port: 6124/g" "${CONF_FILE}"
+    else
+        echo "blob.server.port: 6124" >> "${CONF_FILE}"
+    fi
+
+    if grep -E "^query\.server\.port:.*" "${CONF_FILE}" > /dev/null; then
+        sed -i -e "s/query\.server\.port:.*/query.server.port: 6125/g" "${CONF_FILE}"
+    else
+        echo "query.server.port: 6125" >> "${CONF_FILE}"
+    fi
+
+    echo "config file: " && grep '^[^\n#]' "${CONF_FILE}"
     exec $(drop_privs_cmd) "$FLINK_HOME/bin/jobmanager.sh" start-foreground "$@"
 elif [ "$1" = "taskmanager" ]; then
+    shift 1
+    echo "Starting Task Manager"
+
     TASK_MANAGER_NUMBER_OF_TASK_SLOTS=${TASK_MANAGER_NUMBER_OF_TASK_SLOTS:-$(grep -c ^processor /proc/cpuinfo)}
 
-    sed -i -e "s/jobmanager.rpc.address: localhost/jobmanager.rpc.address: ${JOB_MANAGER_RPC_ADDRESS}/g" "$FLINK_HOME/conf/flink-conf.yaml"
-    sed -i -e "s/taskmanager.numberOfTaskSlots: 1/taskmanager.numberOfTaskSlots: $TASK_MANAGER_NUMBER_OF_TASK_SLOTS/g" "$FLINK_HOME/conf/flink-conf.yaml"
-    echo "blob.server.port: 6124" >> "$FLINK_HOME/conf/flink-conf.yaml"
-    echo "query.server.port: 6125" >> "$FLINK_HOME/conf/flink-conf.yaml"
+    if grep -E "^jobmanager\.rpc\.address:.*" "${CONF_FILE}" > /dev/null; then
+        sed -i -e "s/jobmanager\.rpc\.address:.*/jobmanager.rpc.address: ${JOB_MANAGER_RPC_ADDRESS}/g" "${CONF_FILE}"
+    else
+        echo "jobmanager.rpc.address: ${JOB_MANAGER_RPC_ADDRESS}" >> "${CONF_FILE}"
+    fi
 
-    echo "Starting Task Manager"
-    echo "config file: " && grep '^[^\n#]' "$FLINK_HOME/conf/flink-conf.yaml"
-    exec $(drop_privs_cmd) "$FLINK_HOME/bin/taskmanager.sh" start-foreground
+    if grep -E "^taskmanager\.numberOfTaskSlots:.*" "${CONF_FILE}" > /dev/null; then
+        sed -i -e "s/taskmanager\.numberOfTaskSlots:.*/taskmanager.numberOfTaskSlots: ${TASK_MANAGER_NUMBER_OF_TASK_SLOTS}/g" "${CONF_FILE}"
+    else
+        echo "taskmanager.numberOfTaskSlots: ${TASK_MANAGER_NUMBER_OF_TASK_SLOTS}" >> "${CONF_FILE}"
+    fi
+
+    if grep -E "^blob\.server\.port:.*" "${CONF_FILE}" > /dev/null; then
+        sed -i -e "s/blob\.server\.port:.*/blob.server.port: 6124/g" "${CONF_FILE}"
+    else
+        echo "blob.server.port: 6124" >> "${CONF_FILE}"
+    fi
+
+    if grep -E "^query\.server\.port:.*" "${CONF_FILE}" > /dev/null; then
+        sed -i -e "s/query\.server\.port:.*/query.server.port: 6125/g" "${CONF_FILE}"
+    else
+        echo "query.server.port: 6125" >> "${CONF_FILE}"
+    fi
+
+    echo "config file: " && grep '^[^\n#]' "${CONF_FILE}"
+    exec $(drop_privs_cmd) "$FLINK_HOME/bin/taskmanager.sh" start-foreground "$@"
 fi
 
 exec "$@"
