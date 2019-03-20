@@ -64,6 +64,8 @@ elif [ "$1" = "jobmanager" ]; then
     exec $(drop_privs_cmd) "$FLINK_HOME/bin/jobmanager.sh" start-foreground "$@"
 elif [ "$1" = "taskmanager" ]; then
     shift 1
+    echo "Starting Task Manager"
+
     TASK_MANAGER_NUMBER_OF_TASK_SLOTS=${TASK_MANAGER_NUMBER_OF_TASK_SLOTS:-$(grep -c ^processor /proc/cpuinfo)}
 
     if grep -E "^jobmanager\.rpc\.address:.*" "${CONF_FILE}" > /dev/null; then
@@ -90,7 +92,6 @@ elif [ "$1" = "taskmanager" ]; then
         echo "query.server.port: 6125" >> "${CONF_FILE}"
     fi
 
-    echo "Starting Task Manager"
     echo "config file: " && grep '^[^\n#]' "${CONF_FILE}"
     exec $(drop_privs_cmd) "$FLINK_HOME/bin/taskmanager.sh" start-foreground "$@"
 fi
