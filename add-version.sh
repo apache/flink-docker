@@ -71,6 +71,18 @@ if [ "$flink_release" = "1.7" ]; then
     scala_variants=( 2.11 2.12 )
 fi
 
+# Begining from version 1.8, Apache Flink releases do not included a bundled
+# Hadoop jar. However, this jar is easily downloadable from the Apache Flink
+# website and used simply by adding it to the classpath.
+#
+# The Apache Flink Docker images will follow this pattern, though we should
+# either document how users can build their own image that includes Hadoop, or
+# publish a matrix of images downstream of this one that include the jar.
+if [ "$flink_release" = "1.8" ]; then
+    hadoop_variants=( 0 )
+    scala_variants=( 2.11 2.12 )
+fi
+
 if [ -d "$flink_release" ]; then
     error "Directory $flink_release already exists; delete before continuing"
 fi

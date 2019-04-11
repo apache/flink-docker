@@ -9,7 +9,7 @@
 set -eu
 
 declare -A aliases=(
-    [1.7]='latest'
+    [1.8]='latest'
 )
 
 self="$(basename "$BASH_SOURCE")"
@@ -87,6 +87,12 @@ scala_variants=( 2.11 )
 # fi
 
 if [ "$version" = "1.7" ]; then
+    scala_variants=( 2.11 2.12 )
+fi
+
+# See note in `add-version.sh`.
+if [ "$version" = "1.8" ]; then
+    hadoop_variants=( 0 )
     scala_variants=( 2.11 2.12 )
 fi
 
