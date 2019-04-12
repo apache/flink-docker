@@ -59,8 +59,8 @@ fi
 # Defaults, can vary between versions
 source_variants=( debian alpine )
 hadoop_variants=( 24 26 27 28 0 )
-scala_variants=( 2.11 )
-docker_entrypoint="docker-entrypoint.sh"
+scala_variants=( 2.11 2.12 )
+gpg_key=
 
 # Version-specific variants (example)
 # if [ "$flink_release" = "x.y" ]; then
@@ -68,7 +68,7 @@ docker_entrypoint="docker-entrypoint.sh"
 # fi
 
 if [ "$flink_release" = "1.7" ]; then
-    scala_variants=( 2.11 2.12 )
+    gpg_key="1C1E2394D3194E1944613488F320986D35C33D6A"
 fi
 
 # Begining from version 1.8, Apache Flink releases do not included a bundled
@@ -80,16 +80,12 @@ fi
 # publish a matrix of images downstream of this one that include the jar.
 if [ "$flink_release" = "1.8" ]; then
     hadoop_variants=( 0 )
-    scala_variants=( 2.11 2.12 )
+    gpg_key="F2A67A8047499BBB3908D17AA8F4FD97121D7293"
 fi
 
 if [ -d "$flink_release" ]; then
     error "Directory $flink_release already exists; delete before continuing"
 fi
-
-echo -n >&2 "Checking for latest KEYS..."
-wget -q -O "KEYS" https://www.apache.org/dist/flink/KEYS
-echo >&2 " done."
 
 mkdir "$flink_release"
 
@@ -106,12 +102,12 @@ for source_variant in "${source_variants[@]}"; do
             dir="$flink_release/${hadoop_scala_variant}-${source_variant}"
 
             mkdir "$dir"
-            cp KEYS "$dir/KEYS"
-            cp "$docker_entrypoint" "$dir/docker-entrypoint.sh"
+            cp docker-entrypoint.sh "$dir/docker-entrypoint.sh"
 
             sed \
                 -e "s/%%FLINK_VERSION%%/$flink_version/" \
                 -e "s/%%HADOOP_SCALA_VARIANT%%/$hadoop_scala_variant/" \
+                -e "s/%%GPG_KEY%%/$gpg_key/" \
                 "Dockerfile-$source_variant.template" > "$dir/Dockerfile"
         done
     done
