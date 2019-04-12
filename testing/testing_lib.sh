@@ -217,18 +217,22 @@ function create_network() {
 }
 
 # Find and kill any remaining containers attached to the network, then remove
-# the network.
+# the network and any images produced by the build.
 function cleanup() {
     local containers
-    mapfile -t containers < <(docker ps --quiet --filter network="$NETWORK_NAME")
+    containers="$(docker ps --quiet --filter network="$NETWORK_NAME")"
 
-    if [ "${#containers[@]}" -gt 0 ]; then
-        echo >&2 -n "==> Killing ${#containers[@]} orphaned container(s)..."
-        docker kill "${containers[@]}" > /dev/null
+    if [ -n "$containers" ]; then
+        echo >&2 -n "==> Killing $(echo -n "$containers" | grep -c '^') orphaned container(s)..."
+        echo "$containers" | xargs docker kill > /dev/null
         echo >&2 " done."
     fi
 
     docker network rm "$NETWORK_NAME" > /dev/null 2>&1 || true
+
+    local images
+    images="$(docker images --quiet --filter reference="$IMAGE_REPO")"
+    echo "$images" | docker rmi > /dev/null
 }
 
 # For each image, run a jobmanager and taskmanager and verify they start up and connect to each
