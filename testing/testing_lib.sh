@@ -84,7 +84,7 @@ function run_jobmanager_non_root() {
         --detach \
         --name "jobmanager" \
         --network "$NETWORK_NAME" \
-        --user 1234 \
+        --user flink \
         --publish 6123:6123 \
         --publish 8081:8081 \
         -e JOB_MANAGER_RPC_ADDRESS="jobmanager" \
@@ -168,7 +168,7 @@ function run_taskmanager_non_root() {
         --detach \
         --name "taskmanager" \
         --network "$NETWORK_NAME" \
-        --user 1234 \
+        --user flink \
         -e JOB_MANAGER_RPC_ADDRESS="jobmanager" \
         "$image_name" \
         taskmanager
@@ -232,7 +232,12 @@ function cleanup() {
 
     local images
     images="$(docker images --quiet --filter reference="$IMAGE_REPO")"
-    echo "$images" | docker rmi > /dev/null
+
+    if [ -n "$images" ]; then
+        echo >&2 -n "==> Deleting $(echo -n "$images" | grep -c '^') image(s)..."
+        echo "$images" | xargs docker rmi > /dev/null
+        echo >&2 " done."
+    fi
 }
 
 # For each image, run a jobmanager and taskmanager and verify they start up and connect to each
