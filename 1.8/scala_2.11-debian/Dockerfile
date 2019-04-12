@@ -25,12 +25,12 @@ RUN set -ex; \
   rm -rf /var/lib/apt/lists/*
 
 # Grab gosu for easy step-down from root
-ENV GOSU_VERSION 1.7
+ENV GOSU_VERSION 1.11
 RUN set -ex; \
   wget -nv -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$(dpkg --print-architecture)"; \
   wget -nv -O /usr/local/bin/gosu.asc "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$(dpkg --print-architecture).asc"; \
   export GNUPGHOME="$(mktemp -d)"; \
-  for server in $(shuf -e ha.pool.sks-keyservers.net \
+  for server in ha.pool.sks-keyservers.net $(shuf -e \
                           hkp://p80.pool.sks-keyservers.net:80 \
                           keyserver.ubuntu.com \
                           hkp://keyserver.ubuntu.com:80 \
@@ -45,7 +45,8 @@ RUN set -ex; \
 
 # Configure Flink version
 ENV FLINK_VERSION=1.8.0 \
-    HADOOP_SCALA_VARIANT=scala_2.11
+    HADOOP_SCALA_VARIANT=scala_2.11 \
+    GPG_KEY=F2A67A8047499BBB3908D17AA8F4FD97121D7293
 
 # Prepare environment
 ENV FLINK_HOME=/opt/flink
@@ -59,16 +60,19 @@ ENV FLINK_URL_FILE_PATH=flink/flink-${FLINK_VERSION}/flink-${FLINK_VERSION}-bin-
 ENV FLINK_TGZ_URL=https://www.apache.org/dyn/closer.cgi?action=download&filename=${FLINK_URL_FILE_PATH} \
     FLINK_ASC_URL=https://www.apache.org/dist/${FLINK_URL_FILE_PATH}.asc
 
-# For GPG verification instead of relying on key servers
-COPY KEYS /KEYS
-
 # Install Flink
 RUN set -ex; \
   wget -nv -O flink.tgz "$FLINK_TGZ_URL"; \
   wget -nv -O flink.tgz.asc "$FLINK_ASC_URL"; \
   \
   export GNUPGHOME="$(mktemp -d)"; \
-  gpg --batch --import /KEYS; \
+  for server in ha.pool.sks-keyservers.net $(shuf -e \
+                          hkp://p80.pool.sks-keyservers.net:80 \
+                          keyserver.ubuntu.com \
+                          hkp://keyserver.ubuntu.com:80 \
+                          pgp.mit.edu) ; do \
+      gpg --batch --keyserver "$server" --recv-keys "$GPG_KEY" && break || : ; \
+  done && \
   gpg --batch --verify flink.tgz.asc flink.tgz; \
   gpgconf --kill all; \
   rm -rf "$GNUPGHOME" flink.tgz.asc; \

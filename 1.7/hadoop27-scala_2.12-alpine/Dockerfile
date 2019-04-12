@@ -23,7 +23,8 @@ RUN apk add --no-cache bash libc6-compat snappy 'su-exec>=0.2'
 
 # Configure Flink version
 ENV FLINK_VERSION=1.7.2 \
-    HADOOP_SCALA_VARIANT=hadoop27-scala_2.12
+    HADOOP_SCALA_VARIANT=hadoop27-scala_2.12 \
+    GPG_KEY=1C1E2394D3194E1944613488F320986D35C33D6A
 
 # Prepare environment
 ENV FLINK_HOME=/opt/flink
@@ -36,9 +37,6 @@ ENV FLINK_URL_FILE_PATH=flink/flink-${FLINK_VERSION}/flink-${FLINK_VERSION}-bin-
 # Not all mirrors have the .asc files
 ENV FLINK_TGZ_URL=https://www.apache.org/dyn/closer.cgi?action=download&filename=${FLINK_URL_FILE_PATH} \
     FLINK_ASC_URL=https://www.apache.org/dist/${FLINK_URL_FILE_PATH}.asc
-
-# For GPG verification instead of relying on key servers
-COPY KEYS /KEYS
 
 # Install Flink
 RUN set -ex; \
@@ -53,7 +51,13 @@ RUN set -ex; \
   wget -nv -O flink.tgz.asc "$FLINK_ASC_URL"; \
   \
   export GNUPGHOME="$(mktemp -d)"; \
-  gpg --batch --import /KEYS; \
+  for server in ha.pool.sks-keyservers.net $(shuf -e \
+                          hkp://p80.pool.sks-keyservers.net:80 \
+                          keyserver.ubuntu.com \
+                          hkp://keyserver.ubuntu.com:80 \
+                          pgp.mit.edu) ; do \
+      gpg --batch --keyserver "$server" --recv-keys "$GPG_KEY" && break || : ; \
+  done && \
   gpg --batch --verify flink.tgz.asc flink.tgz; \
   gpgconf --kill all; \
   rm -rf "$GNUPGHOME" flink.tgz.asc; \
