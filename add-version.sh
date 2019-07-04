@@ -80,7 +80,12 @@ fi
 # publish a matrix of images downstream of this one that include the jar.
 if [ "$flink_release" = "1.8" ]; then
     hadoop_variants=( 0 )
-    gpg_key="F2A67A8047499BBB3908D17AA8F4FD97121D7293"
+
+    if [ "$flink_version" = "1.8.0" ]; then
+        gpg_key="F2A67A8047499BBB3908D17AA8F4FD97121D7293"
+    elif [ "$flink_version" = "1.8.1" ]; then
+        gpg_key="8FEA1EE9D0048C0CCC70B7573211B0703B79EA0E"
+    fi
 fi
 
 if [ -d "$flink_release" ]; then
