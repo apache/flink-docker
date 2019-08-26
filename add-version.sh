@@ -88,6 +88,11 @@ if [ "$flink_release" = "1.8" ]; then
     fi
 fi
 
+if [ "$flink_release" = "1.9" ]; then
+    hadoop_variants=( 0 )
+    gpg_key="1C1E2394D3194E1944613488F320986D35C33D6A"
+fi
+
 if [ -d "$flink_release" ]; then
     error "Directory $flink_release already exists; delete before continuing"
 fi
