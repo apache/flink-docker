@@ -96,6 +96,11 @@ if [ "$version" = "1.8" ]; then
     scala_variants=( 2.11 2.12 )
 fi
 
+if [ "$version" = "1.9" ]; then
+    hadoop_variants=( 0 )
+    scala_variants=( 2.11 2.12 )
+fi
+
 for source_variant in "${source_variants[@]}"; do
 for hadoop_variant in "${hadoop_variants[@]}"; do
 for scala_variant in "${scala_variants[@]}"; do
