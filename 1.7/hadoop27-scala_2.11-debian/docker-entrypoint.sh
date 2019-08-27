@@ -60,10 +60,6 @@ elif [ "$1" = "jobmanager" ]; then
         echo "query.server.port: 6125" >> "${CONF_FILE}"
     fi
 
-    if [ -n "${FLINK_PROPERTIES}" ]; then
-        echo "${FLINK_PROPERTIES}" >> "${CONF_FILE}"
-    fi
-
     echo "config file: " && grep '^[^\n#]' "${CONF_FILE}"
     exec $(drop_privs_cmd) "$FLINK_HOME/bin/jobmanager.sh" start-foreground "$@"
 elif [ "$1" = "taskmanager" ]; then
@@ -94,10 +90,6 @@ elif [ "$1" = "taskmanager" ]; then
         sed -i -e "s/query\.server\.port:.*/query.server.port: 6125/g" "${CONF_FILE}"
     else
         echo "query.server.port: 6125" >> "${CONF_FILE}"
-    fi
-
-    if [ -n "${FLINK_PROPERTIES}" ]; then
-        echo "${FLINK_PROPERTIES}" >> "${CONF_FILE}"
     fi
 
     echo "config file: " && grep '^[^\n#]' "${CONF_FILE}"
