@@ -45,7 +45,7 @@ RUN set -ex; \
 
 # Configure Flink version
 ENV FLINK_VERSION=1.8.1 \
-    HADOOP_SCALA_VARIANT=scala_2.12 \
+    SCALA_VERSION=2.12 \
     GPG_KEY=8FEA1EE9D0048C0CCC70B7573211B0703B79EA0E
 
 # Prepare environment
@@ -55,7 +55,7 @@ RUN groupadd --system --gid=9999 flink && \
     useradd --system --home-dir $FLINK_HOME --uid=9999 --gid=flink flink
 WORKDIR $FLINK_HOME
 
-ENV FLINK_URL_FILE_PATH=flink/flink-${FLINK_VERSION}/flink-${FLINK_VERSION}-bin-${HADOOP_SCALA_VARIANT}.tgz
+ENV FLINK_URL_FILE_PATH=flink/flink-${FLINK_VERSION}/flink-${FLINK_VERSION}-bin-scala_${SCALA_VERSION}.tgz
 # Not all mirrors have the .asc files
 ENV FLINK_TGZ_URL=https://www.apache.org/dyn/closer.cgi?action=download&filename=${FLINK_URL_FILE_PATH} \
     FLINK_ASC_URL=https://www.apache.org/dist/${FLINK_URL_FILE_PATH}.asc
