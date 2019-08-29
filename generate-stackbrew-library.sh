@@ -77,43 +77,18 @@ for version in "${versions[@]}"; do
 
 # Defaults, can vary between versions
 source_variants=( debian )
-hadoop_variants=( 24 26 27 28 0 )
-scala_variants=( 2.11 )
+scala_versions=( 2.11 2.12 )
 
 # Version-specific variants (example)
-# if [ "$version" = "x.y" ]; then
-#     hadoop_variants=( 24 26 27 28 0 )
-#     scala_variants=( 2.10 2.11 )
+# if [ "$flink_release" = "x.y" ]; then
+#     scala_versions=( 2.10 2.11 2.12 )
 # fi
 
-if [ "$version" = "1.7" ]; then
-    scala_variants=( 2.11 2.12 )
-fi
-
-# See note in `add-version.sh`.
-if [ "$version" = "1.8" ]; then
-    hadoop_variants=( 0 )
-    scala_variants=( 2.11 2.12 )
-fi
-
-if [ "$version" = "1.9" ]; then
-    hadoop_variants=( 0 )
-    scala_variants=( 2.11 2.12 )
-fi
-
 for source_variant in "${source_variants[@]}"; do
-for hadoop_variant in "${hadoop_variants[@]}"; do
-for scala_variant in "${scala_variants[@]}"; do
+for scala_version in "${scala_versions[@]}"; do
+    dir="$version/scala_${scala_version}-${source_variant}"
 
-    if [ "$hadoop_variant" = "0" ]; then
-        hadoop_scala_variant="scala_${scala_variant}"
-    else
-        hadoop_scala_variant="hadoop${hadoop_variant}-scala_${scala_variant}"
-    fi
-
-    dir="$version/${hadoop_scala_variant}-${source_variant}"
-
-    # Not all Hadoop/Scala combinations may exist
+    # Not all variant combinations may exist
     [ -f "$dir/Dockerfile" ] || continue
 
     commit="$(dirCommit "$dir")"
@@ -121,65 +96,39 @@ for scala_variant in "${scala_variants[@]}"; do
     # Extract the full Flink version from the Dockerfile
     flink_version="$(git show "$commit":"$dir/Dockerfile" | awk '/ENV FLINK_VERSION=(.*) /{ split($2,a,"="); print a[2]}')"
 
-    full_version=$flink_version-$hadoop_scala_variant
+    full_version=$flink_version-scala_$scala_version
 
     variantParent="$(awk 'toupper($1) == "FROM" { print $2 }' "$dir/Dockerfile")"
     variantArches="${parentRepoToArches[$variantParent]}"
 
-    # Start with the full version e.g. "1.2.0-hadoop27-scala_2.11" and add
+    # Start with the full version e.g. "1.2.0-scala_2.11" and add
     # additional tags as relevant
     tags=( $full_version )
 
     is_latest_version=
     [ "$version" = "${versions[-1]}" ] && is_latest_version=1
 
-    is_latest_hadoop=
-    [ "$hadoop_variant" = "${hadoop_variants[-1]}" ] && is_latest_hadoop=1
-
     is_latest_scala=
-    [ "$scala_variant" = "${scala_variants[-1]}" ] && is_latest_scala=1
+    [ "$scala_version" = "${scala_versions[-1]}" ] && is_latest_scala=1
 
-    # For the latest supported Hadoop version, add tags that omit it
-    if [ -n "$is_latest_hadoop" ]; then
-        # For Hadoop-free, the tag $flink_version-scala_$scala_variant is redundant
-        if [ "$hadoop_variant" = "0" ]; then
-            add_tags=( $version )
-        else
-            add_tags=( $flink_version $version )
-        fi
+    add_tags=( $version )
 
+    # Add a scala version tag to each image
+    tags=(
+        ${tags[@]}
+        ${add_tags[@]/%/-scala_$scala_version}
+    )
+
+    # If this is the latest Flink release, add a tag with only the scala version
+    if [ -n "$is_latest_version" ]; then
         tags=(
             ${tags[@]}
-            ${add_tags[@]/%/-scala_$scala_variant}
+            "scala_$scala_version"
         )
-
-        if [ -n "$is_latest_version" ]; then
-            tags=(
-                ${tags[@]}
-                "scala_$scala_variant"
-            )
-        fi
     fi
 
-    # For the latest supported Scala version, add tags that omit it
-    # (Not needed for Hadoop-free since there is no specific "hadoop*" tag for it)
-    if [ -n "$is_latest_scala" -a "$hadoop_variant" != "0" ]; then
-        add_tags=( $flink_version $version )
-        tags=(
-            ${tags[@]}
-            ${add_tags[@]/%/-hadoop$hadoop_variant}
-        )
-
-        if [ -n "$is_latest_version" ]; then
-            tags=(
-                ${tags[@]}
-                "hadoop$hadoop_variant"
-            )
-        fi
-    fi
-
-    # For the latest supported Hadoop & Scala version, add tags that omit them
-    if [ -n "$is_latest_hadoop" ] && [ -n "$is_latest_scala" ]; then
+    # For the latest supported Scala version, add tags that omit the scala version
+    if [ -n "$is_latest_scala" ]; then
         tags=(
             ${tags[@]}
             $flink_version
@@ -193,7 +142,7 @@ for scala_variant in "${scala_variants[@]}"; do
     fi
 
     # Finally, designate the 'latest' tag (or '$variant', for non-debian-based images)
-    if [ -n "$is_latest_hadoop" ] && [ -n "$is_latest_scala" ]; then
+    if [ -n "$is_latest_scala" ]; then
         alias_tag="${aliases[$version]:-}"
         if [ -n "$alias_tag" ] && [ "$source_variant" != "debian" ]; then
             alias_tag="$source_variant"
@@ -215,7 +164,6 @@ for scala_variant in "${scala_variants[@]}"; do
 		Directory: $dir
 	EOE
 
-done
 done
 done
 done
