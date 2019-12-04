@@ -21,7 +21,7 @@ FROM openjdk:8-jre
 # Install dependencies
 RUN set -ex; \
   apt-get update; \
-  apt-get -y install libsnappy1v5; \
+  apt-get -y install libsnappy1v5 gettext-base; \
   rm -rf /var/lib/apt/lists/*
 
 # Grab gosu for easy step-down from root
