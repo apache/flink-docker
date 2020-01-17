@@ -36,11 +36,15 @@ drop_privs_cmd() {
 }
 
 copy_plugins_if_required() {
-  echo "Checking for required user plugins"
-  ENABLE_BUILT_IN_PLUGINS=${ENABLE_BUILT_IN_PLUGINS}
+  echo "Enabling required built-in plugins"
   for TARGET_PLUGIN in $(echo "$ENABLE_BUILT_IN_PLUGINS" | grep -o -e "[^;]*"); do
     echo "Moving $TARGET_PLUGIN to plugin directory"
-    cp "${FLINK_HOME}/opt/${TARGET_PLUGIN}" "${FLINK_HOME}/plugins" && echo "Successfully copied $TARGET_PLUGIN"
+    if cp "${FLINK_HOME}/opt/${TARGET_PLUGIN}" "${FLINK_HOME}/plugins"; then
+      echo "Successfully enabled $TARGET_PLUGIN"
+    else
+      echo "Failed to enable $TARGET_PLUGIN. Exiting."
+      exit 1
+    fi
   done
 }
 
