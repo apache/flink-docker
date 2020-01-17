@@ -35,12 +35,22 @@ drop_privs_cmd() {
     fi
 }
 
+copy_plugins_if_required() {
+  echo "Checking for required user plugins"
+  ENABLE_BUILT_IN_PLUGINS=${ENABLE_BUILT_IN_PLUGINS}
+  for TARGET_PLUGIN in $(echo "$ENABLE_BUILT_IN_PLUGINS" | grep -o -e "[^;]*"); do
+    echo "Moving $TARGET_PLUGIN to plugin directory"
+    cp "${FLINK_HOME}/opt/${TARGET_PLUGIN}" "${FLINK_HOME}/plugins" && echo "Successfully copied $TARGET_PLUGIN"
+  done
+}
+
 if [ "$1" = "help" ]; then
     echo "Usage: $(basename "$0") (jobmanager|taskmanager|help)"
     exit 0
 elif [ "$1" = "jobmanager" ]; then
     shift 1
     echo "Starting Job Manager"
+    copy_plugins_if_required
 
     if grep -E "^jobmanager\.rpc\.address:.*" "${CONF_FILE}" > /dev/null; then
         sed -i -e "s/jobmanager\.rpc\.address:.*/jobmanager.rpc.address: ${JOB_MANAGER_RPC_ADDRESS}/g" "${CONF_FILE}"
@@ -70,6 +80,7 @@ elif [ "$1" = "jobmanager" ]; then
 elif [ "$1" = "taskmanager" ]; then
     shift 1
     echo "Starting Task Manager"
+    copy_plugins_if_required
 
     TASK_MANAGER_NUMBER_OF_TASK_SLOTS=${TASK_MANAGER_NUMBER_OF_TASK_SLOTS:-$(grep -c ^processor /proc/cpuinfo)}
 
