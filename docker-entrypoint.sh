@@ -39,7 +39,8 @@ copy_plugins_if_required() {
   echo "Enabling required built-in plugins"
   for TARGET_PLUGIN in $(echo "$ENABLE_BUILT_IN_PLUGINS" | grep -o -e "[^;]*"); do
     echo "Moving $TARGET_PLUGIN to plugin directory"
-    if cp "${FLINK_HOME}/opt/${TARGET_PLUGIN}" "${FLINK_HOME}/plugins"; then
+    PLUGIN_NAME=${TARGET_PLUGIN%.jar}
+    if mkdir "${FLINK_HOME}/plugins/${PLUGIN_NAME}" && cp "${FLINK_HOME}/opt/${TARGET_PLUGIN}" "${FLINK_HOME}/plugins/${PLUGIN_NAME}"; then
       echo "Successfully enabled $TARGET_PLUGIN"
     else
       echo "Failed to enable $TARGET_PLUGIN. Exiting."
