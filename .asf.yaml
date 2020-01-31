@@ -1,0 +1,6 @@
+github:
+  description: "Docker packaging for Apache Flink"
+  homepage: https://flink.apache.org/
+  labels:
+    - flink
+    - docker
