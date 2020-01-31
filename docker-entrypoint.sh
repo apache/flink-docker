@@ -44,11 +44,14 @@ copy_plugins_if_required() {
   for target_plugin in $(echo "$ENABLE_BUILT_IN_PLUGINS" | tr ';' ' '); do
     echo "Linking ${target_plugin} to plugin directory"
     plugin_name=${target_plugin%.jar}
-    if mkdir -p "${FLINK_HOME}/plugins/${plugin_name}" && ln -fs "${FLINK_HOME}/opt/${target_plugin}" "${FLINK_HOME}/plugins/${plugin_name}"; then
-      echo "Successfully enabled ${target_plugin}"
-    else
-      echo "Failed to enable ${target_plugin}. Exiting."
+
+    mkdir -p "${FLINK_HOME}/plugins/${plugin_name}"
+    if [ ! -e "${FLINK_HOME}/opt/${target_plugin}" ]; then
+      echo "Plugin ${target_plugin} does not exist. Exiting."
       exit 1
+    else
+      ln -fs "${FLINK_HOME}/opt/${target_plugin}" "${FLINK_HOME}/plugins/${plugin_name}"
+      echo "Successfully enabled ${target_plugin}"
     fi
   done
 }
