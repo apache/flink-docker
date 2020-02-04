@@ -58,11 +58,11 @@ getArches() {
 getArches 'flink'
 
 cat <<-EOH
-# this file is generated via https://github.com/docker-flink/docker-flink/blob/$(fileCommit "$self")/$self
+# this file is generated via https://github.com/apache/flink-docker/blob/$(fileCommit "$self")/$self
 
 Maintainers: Patrick Lucas <me@patricklucas.com> (@patricklucas),
              Ismaël Mejía <iemejia@gmail.com> (@iemejia)
-GitRepo: https://github.com/docker-flink/docker-flink.git
+GitRepo: https://github.com/apache/flink-docker.git
 EOH
 
 # prints "$2$1$3$1...$N"

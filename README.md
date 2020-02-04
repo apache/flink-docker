@@ -1,7 +1,7 @@
-docker-flink
+flink-docker
 ============
 
-[![Build Status](https://travis-ci.org/docker-flink/docker-flink.svg?branch=master)](https://travis-ci.org/docker-flink/docker-flink)
+[![Build Status](https://travis-ci.org/apache/flink-docker.svg?branch=master)](https://travis-ci.org/apache/flink-docker)
 
 Docker packaging for Apache Flink
 
