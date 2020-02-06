@@ -17,11 +17,6 @@ if [ -n "$IS_PULL_REQUEST" ]; then
   echo "Changed files in this pull request:"
   echo "${changed_files}"
   echo
-
-  if echo "${changed_files}" | grep -q '^[0-9]\+\.[0-9]\+/'; then
-    echo 'error: generated files in x.y/ directories should not be modified.'
-    exit 1
-  fi
 fi
 
 if [ -z "$IS_PULL_REQUEST" ] && [ "$BRANCH" = "master" ]; then
