@@ -5,7 +5,7 @@ This repo contains Dockerfiles for building Docker images for Apache Flink, and 
 the "official" [`flink`](https://hub.docker.com/_/flink) images hosted on Docker Hub.
 
 These Dockerfiles are maintained by the Apache Flink community, but the Docker community is
-responsible building and hosting the images on Docker Hub.
+responsible for building and hosting the images on Docker Hub.
 
 [![Build Status](https://travis-ci.org/apache/flink-docker.svg?branch=master)](https://travis-ci.org/apache/flink-docker)
 
@@ -26,6 +26,15 @@ Flink Docker image lifecycle
 
 Workflow for new Flink releases
 -------------------------------
+
+### Note for new Flink minor (x.y.0) releases
+
+When a new Flink minor version (x.y.0) is released, the `aliases` array in
+`generate-stackbrew-library.sh` must be updated so that the images for the new release are tagged
+`latest`.
+
+
+### Release workflow
 
 When a new release of Flink is available, the Dockerfiles in this repo should be updated and a new
 manifest sent to the Docker Library [`official-images`](
@@ -63,6 +72,21 @@ https://github.com/docker-library/official-images/pull/7378)]</sup>
 
 Once the pull request has been merged (often within 1 business day), the new images will be
 available shortly thereafter.
+
+
+### Release checklist
+
+- [ ] The GPG key ID of the key used to sign the release has been added to `add-version.sh` and
+      committed with the message `Add GPG key for x.y.z release`
+- [ ] For new patch version releases (`x.y.z`), any existing generated files for the same minor
+      version have been removed with `rm -r x.y/`
+- [ ] `./add-version.sh -r x.y -f x.y.z` has been run, and the newly-generated files committed with
+      the message `Update Dockerfiles for x.y.z release`
+- [ ] For new minor version releases (`x.y.0`), the `aliases` array in
+      `generate-stackbrew-library.sh` has been updated with `[x.y]='latest'`
+- [ ] A pull request with the above changes has been opened on this repo and merged
+- [ ] The new library manifest has been generated with `generate-stackbrew-library.sh` and a pull
+      request opened on the `official-images` repo with commit message `Update to Flink x.y.z`
 
 
 ### Stackbrew Manifest
