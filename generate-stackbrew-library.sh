@@ -16,7 +16,7 @@ self="$(basename "$BASH_SOURCE")"
 cd "$(dirname "$(readlink -f "$BASH_SOURCE")")"
 
 # Identify directories matching '?.?' (e.g. '1.7') and remove trailing slashes
-versions=( ?.?/ )
+versions=( ?.?/ ?.??/ )
 versions=( "${versions[@]%/}" )
 
 # get the most recent commit which modified any of "$@"
