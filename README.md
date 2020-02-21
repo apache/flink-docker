@@ -27,11 +27,14 @@ Flink Docker image lifecycle
 Workflow for new Flink releases
 -------------------------------
 
-### Note for new Flink minor (x.y.0) releases
+### Notes for new Flink minor (x.y.0) releases
 
-When a new Flink minor version (x.y.0) is released, the `aliases` array in
-`generate-stackbrew-library.sh` must be updated so that the images for the new release are tagged
-`latest`.
+There are additional steps required when a new Flink minor version (x.y.0) is released.
+
+* Since only the current and previous minor versions of Flink are supported, the Dockerfiles for
+  older versions must be removed when adding the new version to this repo
+* The new images should be given the `latest` tag, so the `aliases` array in
+  `generate-stackbrew-library.sh` must be updated
 
 
 ### Release workflow
@@ -78,12 +81,14 @@ available shortly thereafter.
 
 - [ ] The GPG key ID of the key used to sign the release has been added to `add-version.sh` and
       committed with the message `Add GPG key for x.y.z release`
-- [ ] For new patch version releases (`x.y.z`), any existing generated files for the same minor
-      version have been removed with `rm -r x.y/`
-- [ ] `./add-version.sh -r x.y -f x.y.z` has been run, and the newly-generated files committed with
+- [ ] _(new minor releases only)_ any unsupported Flink minor version Dockerfiles have been removed
+      (only two `x.y/` directories should be present)
+- [ ] _(new patch releases only)_ any existing generated files for the same minor version have been
+      removed
+- [ ] `./add-version.sh -r x.y -f x.y.z` has been run, and the updated Dockerfiles committed with
       the message `Update Dockerfiles for x.y.z release`
-- [ ] For new minor version releases (`x.y.0`), the `aliases` array in
-      `generate-stackbrew-library.sh` has been updated with `[x.y]='latest'`
+- [ ] _(new minor releases only)_ the `aliases` array in `generate-stackbrew-library.sh` has been
+      updated with `[x.y]='latest'` and committed with the message `Update latest image tag to x.y`
 - [ ] A pull request with the above changes has been opened on this repo and merged
 - [ ] The new library manifest has been generated with `generate-stackbrew-library.sh` and a pull
       request opened on the `official-images` repo with commit message `Update to Flink x.y.z`
