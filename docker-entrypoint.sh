@@ -20,7 +20,8 @@
 
 # If unspecified, the hostname of the container is taken as the JobManager address
 JOB_MANAGER_RPC_ADDRESS=${JOB_MANAGER_RPC_ADDRESS:-$(hostname -f)}
-CONF_FILE="${FLINK_HOME}/conf/flink-conf.yaml"
+FLINK_CONF_DIR=${FLINK_CONF_DIR:-${FLINK_HOME}/conf}
+CONF_FILE="${FLINK_CONF_DIR}/flink-conf.yaml"
 
 drop_privs_cmd() {
     if [ $(id -u) != 0 ]; then
