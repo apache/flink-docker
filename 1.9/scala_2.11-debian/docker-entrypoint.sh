@@ -56,6 +56,27 @@ copy_plugins_if_required() {
   done
 }
 
+set_config_option() {
+  local option=$1
+  local value=$2
+
+  # escape periods for usage in regular expressions
+  local escaped_option=$(echo ${option} | sed -e "s/\./\\\./g")
+
+  # either override an existing entry, or append a new one
+  if grep -E "^${escaped_option}:.*" "${CONF_FILE}" > /dev/null; then
+        sed -i -e "s/${escaped_option}:.*/$option: $value/g" "${CONF_FILE}"
+  else
+        echo "${option}: ${value}" >> "${CONF_FILE}"
+  fi
+}
+
+set_common_options() {
+    set_config_option jobmanager.rpc.address ${JOB_MANAGER_RPC_ADDRESS}
+    set_config_option blob.server.port 6124
+    set_config_option query.server.port 6125
+}
+
 if [ "$1" = "help" ]; then
     echo "Usage: $(basename "$0") (jobmanager|taskmanager|help)"
     exit 0
@@ -64,23 +85,7 @@ elif [ "$1" = "jobmanager" ]; then
     echo "Starting Job Manager"
     copy_plugins_if_required
 
-    if grep -E "^jobmanager\.rpc\.address:.*" "${CONF_FILE}" > /dev/null; then
-        sed -i -e "s/jobmanager\.rpc\.address:.*/jobmanager.rpc.address: ${JOB_MANAGER_RPC_ADDRESS}/g" "${CONF_FILE}"
-    else
-        echo "jobmanager.rpc.address: ${JOB_MANAGER_RPC_ADDRESS}" >> "${CONF_FILE}"
-    fi
-
-    if grep -E "^blob\.server\.port:.*" "${CONF_FILE}" > /dev/null; then
-        sed -i -e "s/blob\.server\.port:.*/blob.server.port: 6124/g" "${CONF_FILE}"
-    else
-        echo "blob.server.port: 6124" >> "${CONF_FILE}"
-    fi
-
-    if grep -E "^query\.server\.port:.*" "${CONF_FILE}" > /dev/null; then
-        sed -i -e "s/query\.server\.port:.*/query.server.port: 6125/g" "${CONF_FILE}"
-    else
-        echo "query.server.port: 6125" >> "${CONF_FILE}"
-    fi
+    set_common_options
 
     if [ -n "${FLINK_PROPERTIES}" ]; then
         echo "${FLINK_PROPERTIES}" >> "${CONF_FILE}"
@@ -95,29 +100,8 @@ elif [ "$1" = "taskmanager" ]; then
 
     TASK_MANAGER_NUMBER_OF_TASK_SLOTS=${TASK_MANAGER_NUMBER_OF_TASK_SLOTS:-$(grep -c ^processor /proc/cpuinfo)}
 
-    if grep -E "^jobmanager\.rpc\.address:.*" "${CONF_FILE}" > /dev/null; then
-        sed -i -e "s/jobmanager\.rpc\.address:.*/jobmanager.rpc.address: ${JOB_MANAGER_RPC_ADDRESS}/g" "${CONF_FILE}"
-    else
-        echo "jobmanager.rpc.address: ${JOB_MANAGER_RPC_ADDRESS}" >> "${CONF_FILE}"
-    fi
-
-    if grep -E "^taskmanager\.numberOfTaskSlots:.*" "${CONF_FILE}" > /dev/null; then
-        sed -i -e "s/taskmanager\.numberOfTaskSlots:.*/taskmanager.numberOfTaskSlots: ${TASK_MANAGER_NUMBER_OF_TASK_SLOTS}/g" "${CONF_FILE}"
-    else
-        echo "taskmanager.numberOfTaskSlots: ${TASK_MANAGER_NUMBER_OF_TASK_SLOTS}" >> "${CONF_FILE}"
-    fi
-
-    if grep -E "^blob\.server\.port:.*" "${CONF_FILE}" > /dev/null; then
-        sed -i -e "s/blob\.server\.port:.*/blob.server.port: 6124/g" "${CONF_FILE}"
-    else
-        echo "blob.server.port: 6124" >> "${CONF_FILE}"
-    fi
-
-    if grep -E "^query\.server\.port:.*" "${CONF_FILE}" > /dev/null; then
-        sed -i -e "s/query\.server\.port:.*/query.server.port: 6125/g" "${CONF_FILE}"
-    else
-        echo "query.server.port: 6125" >> "${CONF_FILE}"
-    fi
+    set_common_options
+    set_config_option taskmanager.numberOfTaskSlots ${TASK_MANAGER_NUMBER_OF_TASK_SLOTS}
 
     if [ -n "${FLINK_PROPERTIES}" ]; then
         echo "${FLINK_PROPERTIES}" >> "${CONF_FILE}"
