@@ -1,6 +1,11 @@
 os: linux
 dist: bionic
-language: shell
+language: java
+jdk: "openjdk8"
+
+cache:
+  directories:
+    - $HOME/.m2
 
 services:
 - docker
