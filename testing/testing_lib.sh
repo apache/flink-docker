@@ -60,7 +60,7 @@ function internal_run() {
 }
 
 function internal_run_jobmanager() {
-    internal_run "$1" "--name jobmanager --publish 6123:6123 --publish 8081:8081 $2" jobmanager
+    internal_run "$1" "--name jobmanager --publish 6123:6123 --publish 8081:8081 $2" "$3"
 }
 
 function internal_run_taskmanager() {
@@ -144,6 +144,10 @@ function test_image() {
     echo >&2 "===> ${image_tag} taskmanager connected."
 }
 
+function build_test_job() {
+    mvn package -f testing/docker-test-job/pom.xml
+}
+
 function create_network() {
     docker network create "$NETWORK_NAME" > /dev/null
 }
@@ -172,23 +176,48 @@ function cleanup() {
     fi
 }
 
+function internal_smoke_test() {
+    local dockerfile=$1
+    local jm_docker_run_command_args=$2
+    local jm_command_args=$3
+    local tm_docker_run_command_args=$4
+
+    jobmanager_container_id="$(internal_run_jobmanager \
+        "$dockerfile" \
+        "${jm_docker_run_command_args}" \
+        "${jm_command_args}")"
+    taskmanager_container_id="$(internal_run_taskmanager \
+        "$dockerfile" \
+        "${tm_docker_run_command_args}")"
+    wait_for_jobmanager "$dockerfile"
+    test_image "$dockerfile"
+    docker kill "$jobmanager_container_id" "$taskmanager_container_id" > /dev/null
+}
+
 function internal_smoke_test_images() {
     local dockerfiles="$1"
     local docker_run_command_args="$2"
 
     create_network
     trap cleanup EXIT RETURN
+    build_test_job
 
     local jobmanager_container_id
     local taskmanager_container_id
 
     for dockerfile in $dockerfiles; do
         build_image "$dockerfile"
-        jobmanager_container_id="$(internal_run_jobmanager "$dockerfile" "${docker_run_command_args}")"
-        taskmanager_container_id="$(internal_run_taskmanager "$dockerfile" "${docker_run_command_args}")"
-        wait_for_jobmanager "$dockerfile"
-        test_image "$dockerfile"
-        docker kill "$jobmanager_container_id" "$taskmanager_container_id" > /dev/null
+
+        internal_smoke_test \
+            "$dockerfile" \
+            "${docker_run_command_args}" \
+            "jobmanager" \
+            "${docker_run_command_args}"
+        internal_smoke_test \
+            "$dockerfile" \
+            "${docker_run_command_args} --mount type=bind,src=$(pwd)/testing/docker-test-job/target,target=/opt/flink/usrlib" \
+            "standalone-job --job-classname org.apache.flink.StreamingJob" \
+            "${docker_run_command_args} --mount type=bind,src=$(pwd)/testing/docker-test-job/target,target=/opt/flink/usrlib"
     done
 }
 
