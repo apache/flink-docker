@@ -20,6 +20,7 @@
 
 COMMAND_STANDALONE="standalone-job"
 COMMAND_NATIVE_KUBERNETES="native-k8s"
+COMMAND_HISTORY_SERVER="history-server"
 
 # If unspecified, the hostname of the container is taken as the JobManager address
 JOB_MANAGER_RPC_ADDRESS=${JOB_MANAGER_RPC_ADDRESS:-$(hostname -f)}
@@ -93,7 +94,7 @@ prepare_job_manager_start() {
 }
 
 if [ "$1" = "help" ]; then
-    echo "Usage: $(basename "$0") (jobmanager|${COMMAND_STANDALONE}|taskmanager|${COMMAND_NATIVE_KUBERNETES}|help)"
+    echo "Usage: $(basename "$0") (jobmanager|${COMMAND_STANDALONE}|taskmanager|${COMMAND_NATIVE_KUBERNETES}|${COMMAND_HISTORY_SERVER}|help)"
     exit 0
 elif [ "$1" = "jobmanager" ]; then
     shift 1
@@ -105,6 +106,17 @@ elif [ "$1" = ${COMMAND_STANDALONE} ]; then
     prepare_job_manager_start
 
     exec $(drop_privs_cmd) "$FLINK_HOME/bin/standalone-job.sh" start-foreground "$@"
+elif [ "$1" = ${COMMAND_HISTORY_SERVER} ]; then
+    shift 1
+    echo "Starting History Server"
+    copy_plugins_if_required
+
+    if [ -n "${FLINK_PROPERTIES}" ]; then
+        echo "${FLINK_PROPERTIES}" >> "${CONF_FILE}"
+    fi
+    envsubst < "${CONF_FILE}" > "${CONF_FILE}.tmp" && mv "${CONF_FILE}.tmp" "${CONF_FILE}"
+
+    exec $(drop_privs_cmd) "$FLINK_HOME/bin/historyserver.sh" start-foreground "$@"
 elif [ "$1" = "taskmanager" ]; then
     shift 1
     echo "Starting Task Manager"
