@@ -18,6 +18,8 @@
 # limitations under the License.
 ###############################################################################
 
+COMMAND_STANDALONE="standalone-job"
+
 # If unspecified, the hostname of the container is taken as the JobManager address
 JOB_MANAGER_RPC_ADDRESS=${JOB_MANAGER_RPC_ADDRESS:-$(hostname -f)}
 CONF_FILE="${FLINK_HOME}/conf/flink-conf.yaml"
@@ -56,6 +58,27 @@ copy_plugins_if_required() {
   done
 }
 
+setup_usrlib() {
+  if [ -z "${USER_ARTIFACTS}" ]; then
+    return 0
+  fi
+
+  echo "Setting up usrlib"
+  for user_artifact in $(echo "${USER_ARTIFACTS}" | tr ';' ' '); do
+    echo "Adding artifact ${user_artifact} to usrlib directory."
+
+    mkdir -p "${FLINK_HOME}/usrlib"
+    if [ ! -e "${user_artifact}" ]; then
+      echo "Artifact ${user_artifact} does not exist. Exiting."
+      exit 1
+    else
+      mkdir --parents "${FLINK_HOME}/usrlib${user_artifact}"
+      ln -fs "${user_artifact}" "${FLINK_HOME}/usrlib${user_artifact}"
+      echo "Successfully added artifact ${user_artifact} to usrlib directory."
+    fi
+  done
+}
+
 set_config_option() {
   local option=$1
   local value=$2
@@ -77,11 +100,7 @@ set_common_options() {
     set_config_option query.server.port 6125
 }
 
-if [ "$1" = "help" ]; then
-    echo "Usage: $(basename "$0") (jobmanager|taskmanager|help)"
-    exit 0
-elif [ "$1" = "jobmanager" ]; then
-    shift 1
+prepare_job_manager_start() {
     echo "Starting Job Manager"
     copy_plugins_if_required
 
@@ -91,12 +110,27 @@ elif [ "$1" = "jobmanager" ]; then
         echo "${FLINK_PROPERTIES}" >> "${CONF_FILE}"
     fi
     envsubst < "${CONF_FILE}" > "${CONF_FILE}.tmp" && mv "${CONF_FILE}.tmp" "${CONF_FILE}"
+}
+
+if [ "$1" = "help" ]; then
+    echo "Usage: $(basename "$0") (jobmanager|${COMMAND_STANDALONE}|taskmanager|help)"
+    exit 0
+elif [ "$1" = "jobmanager" ]; then
+    shift 1
+    prepare_job_manager_start
 
     exec $(drop_privs_cmd) "$FLINK_HOME/bin/jobmanager.sh" start-foreground "$@"
+elif [ "$1" = ${COMMAND_STANDALONE} ]; then
+    shift 1
+    prepare_job_manager_start
+    setup_usrlib
+
+    exec $(drop_privs_cmd) "$FLINK_HOME/bin/standalone-job.sh" start-foreground "$@"
 elif [ "$1" = "taskmanager" ]; then
     shift 1
     echo "Starting Task Manager"
     copy_plugins_if_required
+    setup_usrlib
 
     TASK_MANAGER_NUMBER_OF_TASK_SLOTS=${TASK_MANAGER_NUMBER_OF_TASK_SLOTS:-$(grep -c ^processor /proc/cpuinfo)}
 

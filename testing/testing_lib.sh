@@ -60,7 +60,7 @@ function internal_run() {
 }
 
 function internal_run_jobmanager() {
-    internal_run "$1" "--name jobmanager --publish 6123:6123 --publish 8081:8081 $2" jobmanager
+    internal_run "$1" "--name jobmanager --publish 6123:6123 --publish 8081:8081 $2" "$3"
 }
 
 function internal_run_taskmanager() {
@@ -144,6 +144,10 @@ function test_image() {
     echo >&2 "===> ${image_tag} taskmanager connected."
 }
 
+function build_test_job() {
+    mvn package -f testing/docker-test-job/pom.xml
+}
+
 function create_network() {
     docker network create "$NETWORK_NAME" > /dev/null
 }
@@ -178,14 +182,27 @@ function internal_smoke_test_images() {
 
     create_network
     trap cleanup EXIT RETURN
+    build_test_job
 
     local jobmanager_container_id
     local taskmanager_container_id
 
     for dockerfile in $dockerfiles; do
         build_image "$dockerfile"
-        jobmanager_container_id="$(internal_run_jobmanager "$dockerfile" "${docker_run_command_args}")"
+
+        jobmanager_container_id="$(internal_run_jobmanager "$dockerfile" "${docker_run_command_args}" "jobmanager")"
         taskmanager_container_id="$(internal_run_taskmanager "$dockerfile" "${docker_run_command_args}")"
+        wait_for_jobmanager "$dockerfile"
+        test_image "$dockerfile"
+        docker kill "$jobmanager_container_id" "$taskmanager_container_id" > /dev/null
+
+        jobmanager_container_id="$(internal_run_jobmanager \
+            "$dockerfile" \
+            "${docker_run_command_args} --mount type=bind,src=$(pwd)/testing/docker-test-job/target,target=/jars -e USER_ARTIFACTS=/jars" \
+            "standalone-job --job-classname org.apache.flink.StreamingJob")"
+        taskmanager_container_id="$(internal_run_taskmanager \
+            "$dockerfile" \
+            "${docker_run_command_args} --mount type=bind,src=$(pwd)/testing/docker-test-job/target,target=/jars")"
         wait_for_jobmanager "$dockerfile"
         test_image "$dockerfile"
         docker kill "$jobmanager_container_id" "$taskmanager_container_id" > /dev/null
