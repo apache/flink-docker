@@ -58,6 +58,7 @@ fi
 
 # Defaults, can vary between versions
 source_variants=( debian )
+java_versions=( 8 11 )
 scala_versions=( 2.11 2.12 )
 gpg_key=
 
@@ -65,6 +66,10 @@ gpg_key=
 # if [ "$flink_release" = "x.y" ]; then
 #     scala_versions=( 2.10 2.11 2.12 )
 # fi
+
+if [ "$flink_release" = "1.9" ]; then
+    java_versions=( 8 )
+fi
 
 # No real need to cull old versions
 if [ "$flink_version" = "1.8.0" ]; then
@@ -95,17 +100,19 @@ mkdir "$flink_release"
 
 echo -n >&2 "Generating Dockerfiles..."
 for source_variant in "${source_variants[@]}"; do
-    for scala_version in "${scala_versions[@]}"; do
-        dir="$flink_release/scala_${scala_version}-${source_variant}"
+    for java_version in "${java_versions[@]}"; do
+        for scala_version in "${scala_versions[@]}"; do
+            dir="$flink_release/java_${java_version}-scala_${scala_version}-${source_variant}"
+            mkdir "$dir"
+            cp docker-entrypoint.sh "$dir/docker-entrypoint.sh"
 
-        mkdir "$dir"
-        cp docker-entrypoint.sh "$dir/docker-entrypoint.sh"
-
-        sed \
-            -e "s/%%FLINK_VERSION%%/$flink_version/" \
-            -e "s/%%SCALA_VERSION%%/$scala_version/" \
-            -e "s/%%GPG_KEY%%/$gpg_key/" \
-            "Dockerfile-$source_variant.template" > "$dir/Dockerfile"
+            sed \
+                -e "s/%%FLINK_VERSION%%/$flink_version/" \
+                -e "s/%%JAVA_VERSION%%/$java_version/" \
+                -e "s/%%SCALA_VERSION%%/$scala_version/" \
+                -e "s/%%GPG_KEY%%/$gpg_key/" \
+                "Dockerfile-$source_variant.template" > "$dir/Dockerfile"
+        done
     done
 done
 echo >&2 " done."

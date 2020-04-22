@@ -31,13 +31,13 @@ dirCommit() {
         cd "$dir"
         fileCommit \
             Dockerfile \
-            $(git show HEAD:./Dockerfile | awk '
+            "$(git show HEAD:./Dockerfile | awk '
                 toupper($1) == "COPY" {
                     for (i = 2; i < NF; i++) {
                         print $i
                     }
                 }
-            ')
+            ')"
     )
 }
 
@@ -46,7 +46,7 @@ getArches() {
     local officialImagesUrl='https://github.com/docker-library/official-images/raw/master/library/'
 
     eval "declare -g -A parentRepoToArches=( $(
-        find -name 'Dockerfile' -exec awk '
+        find . -name 'Dockerfile' -exec awk '
                 toupper($1) == "FROM" && $2 !~ /^('"$repo"'|scratch|microsoft\/[^:]+)(:|$)/ {
                     print "'"$officialImagesUrl"'" $2
                 }
@@ -77,6 +77,7 @@ for version in "${versions[@]}"; do
 
 # Defaults, can vary between versions
 source_variants=( debian )
+java_versions=( 8 11 )
 scala_versions=( 2.11 2.12 )
 
 # Version-specific variants (example)
@@ -84,9 +85,14 @@ scala_versions=( 2.11 2.12 )
 #     scala_versions=( 2.10 2.11 2.12 )
 # fi
 
+if [ "$version" = "1.9" ]; then
+    java_versions=( 8 )
+fi
+
 for source_variant in "${source_variants[@]}"; do
+for java_version in "${java_versions[@]}"; do
 for scala_version in "${scala_versions[@]}"; do
-    dir="$version/scala_${scala_version}-${source_variant}"
+    dir="$version/java_${java_version}-scala_${scala_version}-${source_variant}"
 
     # Not all variant combinations may exist
     [ -f "$dir/Dockerfile" ] || continue
@@ -96,14 +102,14 @@ for scala_version in "${scala_versions[@]}"; do
     # Extract the full Flink version from the Dockerfile
     flink_version="$(git show "$commit":"$dir/Dockerfile" | awk '/ENV FLINK_VERSION=(.*) /{ split($2,a,"="); print a[2]}')"
 
-    full_version=$flink_version-scala_$scala_version
+    full_version=$flink_version-java_$java_version-scala_$scala_version
 
     variantParent="$(awk 'toupper($1) == "FROM" { print $2 }' "$dir/Dockerfile")"
     variantArches="${parentRepoToArches[$variantParent]}"
 
     # Start with the full version e.g. "1.2.0-scala_2.11" and add
     # additional tags as relevant
-    tags=( $full_version )
+    tags=( "$full_version" )
 
     is_latest_version=
     [ "$version" = "${versions[-1]}" ] && is_latest_version=1
@@ -111,47 +117,56 @@ for scala_version in "${scala_versions[@]}"; do
     is_latest_scala=
     [ "$scala_version" = "${scala_versions[-1]}" ] && is_latest_scala=1
 
-    add_tags=( $version )
+    add_tags=( "$version" )
 
-    # Add a scala version tag to each image
+    # Add a java and scala version tag to each image
     tags=(
-        ${tags[@]}
-        ${add_tags[@]/%/-scala_$scala_version}
+        "${tags[@]}"
+        "${add_tags[@]/%/-java_$java_version-scala_$scala_version}"
     )
 
-    # If this is the latest Flink release, add a tag with only the scala version
+    # For the main supported Java version, add extra tags
+    if [ "$java_version" == "8" ]; then
+        tags=(
+            "${tags[@]}"
+            "$flink_version-scala_$scala_version"
+            "$version-scala_$scala_version"
+        )
+        if [ -n "$is_latest_scala" ]; then
+            tags=(
+                "${tags[@]}"
+                $flink_version
+                $version
+            )
+        fi
+    fi
+
+    # If this is the latest Flink release we add extra tags
     if [ -n "$is_latest_version" ]; then
         tags=(
-            ${tags[@]}
-            "scala_$scala_version"
+            "${tags[@]}"
+            "java_$java_version-scala_$scala_version"
         )
-    fi
-
-    # For the latest supported Scala version, add tags that omit the scala version
-    if [ -n "$is_latest_scala" ]; then
-        tags=(
-            ${tags[@]}
-            $flink_version
-            $version
-        )
-    fi
-
-    # Add -$variant suffix for non-debian-based images
-    if [ "$source_variant" != "debian" ]; then
-        tags=( ${tags[@]/%/-$source_variant} )
-    fi
-
-    # Finally, designate the 'latest' tag (or '$variant', for non-debian-based images)
-    if [ -n "$is_latest_scala" ]; then
-        alias_tag="${aliases[$version]:-}"
-        if [ -n "$alias_tag" ] && [ "$source_variant" != "debian" ]; then
-            alias_tag="$source_variant"
+        if [ -n "$is_latest_scala" ]; then
+            tags=(
+                "${tags[@]}"
+                "java_$java_version"
+            )
         fi
-
-        tags=(
-            ${tags[@]}
-            $alias_tag
-        )
+        # Java 8 is the default version of Flink so we add the extra tags to it
+        if [ "$java_version" == "8" ]; then
+            tags=(
+                "${tags[@]}"
+                "scala_$scala_version"
+            )
+            if [ -n "$is_latest_scala" ]; then
+                alias_tag="${aliases[$version]:-}"
+                tags=(
+                    ${tags[@]}
+                    $alias_tag
+                )
+            fi
+        fi
     fi
 
     echo
@@ -164,6 +179,7 @@ for scala_version in "${scala_versions[@]}"; do
 		Directory: $dir
 	EOE
 
+done
 done
 done
 done
