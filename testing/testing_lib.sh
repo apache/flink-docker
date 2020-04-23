@@ -45,51 +45,42 @@ function build_image() {
     docker build -t "$image_name" "$dockerfile_dir"
 }
 
-function run_jobmanager() {
-    local dockerfile
-    dockerfile="$1"
+function internal_run() {
+    local dockerfile="$1"
+    local docker_run_command="$2"
+    local args="$3"
 
     local image_tag image_name
     image_tag="$(image_tag "$dockerfile")"
     image_name="$(image_name "$image_tag")"
 
-    echo >&2 "===> Starting ${image_tag} jobmanager..."
+    echo >&2 "===> Starting ${image_tag} ${args}..."
 
-    # Prints container ID
-    docker run \
-        --rm \
-        --detach \
-        --name "jobmanager" \
-        --network "$NETWORK_NAME" \
-        --publish 6123:6123 \
-        --publish 8081:8081 \
-        -e JOB_MANAGER_RPC_ADDRESS="jobmanager" \
-        "$image_name" \
-        jobmanager
+    eval "docker run --rm --detach --network $NETWORK_NAME -e JOB_MANAGER_RPC_ADDRESS=jobmanager ${docker_run_command} $image_name ${args}"
+}
+
+function internal_run_jobmanager() {
+    internal_run "$1" "--name jobmanager --publish 6123:6123 --publish 8081:8081 $2" jobmanager
+}
+
+function run_jobmanager() {
+    internal_run_jobmanager "$1" ""
 }
 
 function run_jobmanager_non_root() {
-    local dockerfile
-    dockerfile="$1"
+    internal_run_jobmanager "$1" "--user flink"
+}
 
-    local image_tag image_name
-    image_tag="$(image_tag "$dockerfile")"
-    image_name="$(image_name "$image_tag")"
+function internal_run_taskmanager() {
+    internal_run "$1" "--name taskmanager $2" "taskmanager"
+}
 
-    echo >&2 "===> Starting ${image_tag} jobmanager as non-root..."
+function run_taskmanager() {
+  internal_run_taskmanager "$1" ""
+}
 
-    # Prints container ID
-    docker run \
-        --rm \
-        --detach \
-        --name "jobmanager" \
-        --network "$NETWORK_NAME" \
-        --user flink \
-        --publish 6123:6123 \
-        --publish 8081:8081 \
-        -e JOB_MANAGER_RPC_ADDRESS="jobmanager" \
-        "$image_name" \
-        jobmanager
+function run_taskmanager_non_root() {
+  internal_run_taskmanager "$1" "--user flink"
 }
 
 function wait_for_jobmanager() {
@@ -129,49 +120,6 @@ function wait_for_jobmanager() {
     done
 
     echo >&2 "===> ${image_tag} jobmanager is ready."
-}
-
-function run_taskmanager() {
-    local dockerfile
-    dockerfile="$1"
-
-    local image_tag image_name
-    image_tag="$(image_tag "$dockerfile")"
-    image_name="$(image_name "$image_tag")"
-
-    echo >&2 "===> Starting ${image_tag} taskmanager..."
-
-    # Prints container ID
-    docker run \
-        --rm \
-        --detach \
-        --name "taskmanager" \
-        --network "$NETWORK_NAME" \
-        -e JOB_MANAGER_RPC_ADDRESS="jobmanager" \
-        "$image_name" \
-        taskmanager
-}
-
-function run_taskmanager_non_root() {
-    local dockerfile
-    dockerfile="$1"
-
-    local image_tag image_name
-    image_tag="$(image_tag "$dockerfile")"
-    image_name="$(image_name "$image_tag")"
-
-    echo >&2 "===> Starting ${image_tag} taskmanager as non-root..."
-
-    # Prints container ID
-    docker run \
-        --rm \
-        --detach \
-        --name "taskmanager" \
-        --network "$NETWORK_NAME" \
-        --user flink \
-        -e JOB_MANAGER_RPC_ADDRESS="jobmanager" \
-        "$image_name" \
-        taskmanager
 }
 
 function test_image() {
