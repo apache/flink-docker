@@ -95,19 +95,38 @@ fi
 
 mkdir "$flink_release"
 
+function generate() {
+    dir=$1
+    binary_download_url=$2
+    asc_download_url=$3
+    gpg_key=$4
+    source_variant=$5
+
+    mkdir "$dir"
+    cp docker-entrypoint.sh "$dir/docker-entrypoint.sh"
+
+    # '&' has special semantics in sed replacement patterns
+    escaped_binary_download_url=$(echo "$binary_download_url" | sed 's/&/\\\&/')
+
+    sed \
+        -e "s,%%BINARY_DOWNLOAD_URL%%,${escaped_binary_download_url}," \
+        -e "s,%%ASC_DOWNLOAD_URL%%,$asc_download_url," \
+        -e "s/%%GPG_KEY%%/$gpg_key/" \
+        "Dockerfile-$source_variant.template" > "$dir/Dockerfile"
+}
+
 echo -n >&2 "Generating Dockerfiles..."
 for source_variant in "${source_variants[@]}"; do
     for scala_version in "${scala_versions[@]}"; do
         dir="$flink_release/scala_${scala_version}-${source_variant}"
 
-        mkdir "$dir"
-        cp docker-entrypoint.sh "$dir/docker-entrypoint.sh"
+        flink_url_file_path=flink/flink-${flink_version}/flink-${flink_version}-bin-scala_${scala_version}.tgz
 
-        sed \
-            -e "s/%%FLINK_VERSION%%/$flink_version/" \
-            -e "s/%%SCALA_VERSION%%/$scala_version/" \
-            -e "s/%%GPG_KEY%%/$gpg_key/" \
-            "Dockerfile-$source_variant.template" > "$dir/Dockerfile"
+        flink_tgz_url="https://www.apache.org/dyn/closer.cgi?action=download&filename=${flink_url_file_path}"
+        # Not all mirrors have the .asc files
+        flink_asc_url=https://www.apache.org/dist/${flink_url_file_path}.asc
+
+        generate "${dir}" "${flink_tgz_url}" "${flink_asc_url}" ${gpg_key} ${source_variant}
     done
 done
 echo >&2 " done."
