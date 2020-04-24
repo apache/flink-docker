@@ -46,7 +46,8 @@ RUN set -ex; \
 # Configure Flink version
 ENV FLINK_TGZ_URL=https://www.apache.org/dyn/closer.cgi?action=download&filename=flink/flink-1.9.3/flink-1.9.3-bin-scala_2.11.tgz \
     FLINK_ASC_URL=https://www.apache.org/dist/flink/flink-1.9.3/flink-1.9.3-bin-scala_2.11.tgz.asc \
-    GPG_KEY=6B6291A8502BA8F0913AE04DDEB95B05BF075300
+    GPG_KEY=6B6291A8502BA8F0913AE04DDEB95B05BF075300 \
+    SKIP_GPG=false
 
 # Prepare environment
 ENV FLINK_HOME=/opt/flink
@@ -58,19 +59,21 @@ WORKDIR $FLINK_HOME
 # Install Flink
 RUN set -ex; \
   wget -nv -O flink.tgz "$FLINK_TGZ_URL"; \
-  wget -nv -O flink.tgz.asc "$FLINK_ASC_URL"; \
   \
-  export GNUPGHOME="$(mktemp -d)"; \
-  for server in ha.pool.sks-keyservers.net $(shuf -e \
-                          hkp://p80.pool.sks-keyservers.net:80 \
-                          keyserver.ubuntu.com \
-                          hkp://keyserver.ubuntu.com:80 \
-                          pgp.mit.edu) ; do \
-      gpg --batch --keyserver "$server" --recv-keys "$GPG_KEY" && break || : ; \
-  done && \
-  gpg --batch --verify flink.tgz.asc flink.tgz; \
-  gpgconf --kill all; \
-  rm -rf "$GNUPGHOME" flink.tgz.asc; \
+  if [ "$SKIP_GPG" = "false" ]; then \
+    wget -nv -O flink.tgz.asc "$FLINK_ASC_URL"; \
+    export GNUPGHOME="$(mktemp -d)"; \
+    for server in ha.pool.sks-keyservers.net $(shuf -e \
+                            hkp://p80.pool.sks-keyservers.net:80 \
+                            keyserver.ubuntu.com \
+                            hkp://keyserver.ubuntu.com:80 \
+                            pgp.mit.edu) ; do \
+        gpg --batch --keyserver "$server" --recv-keys "$GPG_KEY" && break || : ; \
+    done && \
+    gpg --batch --verify flink.tgz.asc flink.tgz; \
+    gpgconf --kill all; \
+    rm -rf "$GNUPGHOME" flink.tgz.asc; \
+  fi; \
   \
   tar -xf flink.tgz --strip-components=1; \
   rm flink.tgz; \

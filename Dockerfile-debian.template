@@ -46,7 +46,8 @@ RUN set -ex; \
 # Configure Flink version
 ENV FLINK_TGZ_URL=%%BINARY_DOWNLOAD_URL%% \
     FLINK_ASC_URL=%%ASC_DOWNLOAD_URL%% \
-    GPG_KEY=%%GPG_KEY%%
+    GPG_KEY=%%GPG_KEY%% \
+    CHECK_GPG=%%CHECK_GPG%%
 
 # Prepare environment
 ENV FLINK_HOME=/opt/flink
@@ -58,19 +59,21 @@ WORKDIR $FLINK_HOME
 # Install Flink
 RUN set -ex; \
   wget -nv -O flink.tgz "$FLINK_TGZ_URL"; \
-  wget -nv -O flink.tgz.asc "$FLINK_ASC_URL"; \
   \
-  export GNUPGHOME="$(mktemp -d)"; \
-  for server in ha.pool.sks-keyservers.net $(shuf -e \
-                          hkp://p80.pool.sks-keyservers.net:80 \
-                          keyserver.ubuntu.com \
-                          hkp://keyserver.ubuntu.com:80 \
-                          pgp.mit.edu) ; do \
-      gpg --batch --keyserver "$server" --recv-keys "$GPG_KEY" && break || : ; \
-  done && \
-  gpg --batch --verify flink.tgz.asc flink.tgz; \
-  gpgconf --kill all; \
-  rm -rf "$GNUPGHOME" flink.tgz.asc; \
+  if [ "$CHECK_GPG" = "true" ]; then \
+    wget -nv -O flink.tgz.asc "$FLINK_ASC_URL"; \
+    export GNUPGHOME="$(mktemp -d)"; \
+    for server in ha.pool.sks-keyservers.net $(shuf -e \
+                            hkp://p80.pool.sks-keyservers.net:80 \
+                            keyserver.ubuntu.com \
+                            hkp://keyserver.ubuntu.com:80 \
+                            pgp.mit.edu) ; do \
+        gpg --batch --keyserver "$server" --recv-keys "$GPG_KEY" && break || : ; \
+    done && \
+    gpg --batch --verify flink.tgz.asc flink.tgz; \
+    gpgconf --kill all; \
+    rm -rf "$GNUPGHOME" flink.tgz.asc; \
+  fi; \
   \
   tar -xf flink.tgz --strip-components=1; \
   rm flink.tgz; \
