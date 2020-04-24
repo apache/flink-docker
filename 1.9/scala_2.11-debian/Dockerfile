@@ -44,8 +44,8 @@ RUN set -ex; \
   gosu nobody true
 
 # Configure Flink version
-ENV FLINK_VERSION=1.9.3 \
-    SCALA_VERSION=2.11 \
+ENV FLINK_TGZ_URL=https://www.apache.org/dyn/closer.cgi?action=download&filename=flink/flink-1.9.3/flink-1.9.3-bin-scala_2.11.tgz \
+    FLINK_ASC_URL=https://www.apache.org/dist/flink/flink-1.9.3/flink-1.9.3-bin-scala_2.11.tgz.asc \
     GPG_KEY=6B6291A8502BA8F0913AE04DDEB95B05BF075300
 
 # Prepare environment
@@ -54,11 +54,6 @@ ENV PATH=$FLINK_HOME/bin:$PATH
 RUN groupadd --system --gid=9999 flink && \
     useradd --system --home-dir $FLINK_HOME --uid=9999 --gid=flink flink
 WORKDIR $FLINK_HOME
-
-ENV FLINK_URL_FILE_PATH=flink/flink-${FLINK_VERSION}/flink-${FLINK_VERSION}-bin-scala_${SCALA_VERSION}.tgz
-# Not all mirrors have the .asc files
-ENV FLINK_TGZ_URL=https://www.apache.org/dyn/closer.cgi?action=download&filename=${FLINK_URL_FILE_PATH} \
-    FLINK_ASC_URL=https://www.apache.org/dist/${FLINK_URL_FILE_PATH}.asc
 
 # Install Flink
 RUN set -ex; \
