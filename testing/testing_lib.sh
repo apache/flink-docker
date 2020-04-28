@@ -63,24 +63,8 @@ function internal_run_jobmanager() {
     internal_run "$1" "--name jobmanager --publish 6123:6123 --publish 8081:8081 $2" jobmanager
 }
 
-function run_jobmanager() {
-    internal_run_jobmanager "$1" ""
-}
-
-function run_jobmanager_non_root() {
-    internal_run_jobmanager "$1" "--user flink"
-}
-
 function internal_run_taskmanager() {
     internal_run "$1" "--name taskmanager $2" "taskmanager"
-}
-
-function run_taskmanager() {
-  internal_run_taskmanager "$1" ""
-}
-
-function run_taskmanager_non_root() {
-  internal_run_taskmanager "$1" "--user flink"
 }
 
 function wait_for_jobmanager() {
@@ -188,74 +172,47 @@ function cleanup() {
     fi
 }
 
-# For each image, run a jobmanager and taskmanager and verify they start up and connect to each
-# other successfully.
-function smoke_test_all_images() {
+function internal_smoke_test_images() {
+    local dockerfiles="$1"
+    local docker_run_command_args="$2"
+
     create_network
     trap cleanup EXIT RETURN
 
     local jobmanager_container_id
     local taskmanager_container_id
-    local dockerfiles
-    dockerfiles="$(ls ./*/*/Dockerfile)"
-
-    echo >&2 "==> Test all images"
 
     for dockerfile in $dockerfiles; do
         build_image "$dockerfile"
-        jobmanager_container_id="$(run_jobmanager "$dockerfile")"
-        taskmanager_container_id="$(run_taskmanager "$dockerfile")"
+        jobmanager_container_id="$(internal_run_jobmanager "$dockerfile" "${docker_run_command_args}")"
+        taskmanager_container_id="$(internal_run_taskmanager "$dockerfile" "${docker_run_command_args}")"
         wait_for_jobmanager "$dockerfile"
         test_image "$dockerfile"
         docker kill "$jobmanager_container_id" "$taskmanager_container_id" > /dev/null
     done
+}
+
+# For each image, run a jobmanager and taskmanager and verify they start up and connect to each
+# other successfully.
+function smoke_test_all_images() {
+    echo >&2 "==> Test all images"
+    internal_smoke_test_images "$(ls ./*/*/Dockerfile)" ""
 }
 
 # Same as smoke_test_all_images, but test only the last image alphabetically (presumed to be the
 # most recent).
 function smoke_test_one_image() {
-    create_network
-    trap cleanup EXIT RETURN
-
-    local jobmanager_container_id
-    local taskmanager_container_id
-    local dockerfiles
-    dockerfiles="$dockerfiles $(ls ./*/*/Dockerfile | tail -n 1)"
-
     echo >&2 "==> Test one image"
-
-    for dockerfile in $dockerfiles; do
-        build_image "$dockerfile"
-        jobmanager_container_id="$(run_jobmanager "$dockerfile")"
-        taskmanager_container_id="$(run_taskmanager "$dockerfile")"
-        wait_for_jobmanager "$dockerfile"
-        test_image "$dockerfile"
-        docker kill "$jobmanager_container_id" "$taskmanager_container_id" > /dev/null
-    done
+    internal_smoke_test_images "$(ls ./*/*/Dockerfile | tail -n 1)" ""
 }
 
 # Similar to smoke_test_one_image, but test one debian image and one alpine image running as a
 # non-root user.
-function smoke_test_non_root() {
-    create_network
-    trap cleanup EXIT RETURN
-
-    local jobmanager_container_id
-    local taskmanager_container_id
-    local dockerfiles
-    dockerfiles="$dockerfiles $(ls ./*/*-debian/Dockerfile | tail -n 1)"
-    dockerfiles="$dockerfiles $(ls ./*/*-alpine/Dockerfile | tail -n 1)"
-
+function smoke_test_one_image_non_root() {
     echo >&2 "==> Test images running as non-root"
-
-    for dockerfile in $dockerfiles; do
-        build_image "$dockerfile"
-        jobmanager_container_id="$(run_jobmanager_non_root "$dockerfile")"
-        taskmanager_container_id="$(run_taskmanager_non_root "$dockerfile")"
-        wait_for_jobmanager "$dockerfile"
-        test_image "$dockerfile"
-        docker kill "$jobmanager_container_id" "$taskmanager_container_id" > /dev/null
-    done
+    local dockerfiles="$dockerfiles $(ls ./*/*-debian/Dockerfile | tail -n 1)"
+    dockerfiles="$dockerfiles $(ls ./*/*-alpine/Dockerfile | tail -n 1)"
+    internal_smoke_test_images "$dockerfiles" "--user flink"
 }
 
 # vim: ts=4 sw=4 et
