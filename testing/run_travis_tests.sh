@@ -19,10 +19,11 @@ if [ -n "$IS_PULL_REQUEST" ]; then
   echo
 fi
 
-if [ -z "$IS_PULL_REQUEST" ] && [ "$BRANCH" = "master" ]; then
-  # Test all images on master
+./add-version.sh -r 1.9 -f 1.9.3
+
+if [ -z "$IS_PULL_REQUEST" ] && [ "$BRANCH" = "dev-1.9" ]; then
   smoke_test_all_images
-  smoke_test_non_root
+  smoke_test_one_image_non_root
 else
   # For pull requests and branches, test one image
   smoke_test_one_image
