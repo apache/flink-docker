@@ -1,9 +1,0 @@
-os: linux
-dist: bionic
-language: shell
-
-services:
-- docker
-
-script:
-- testing/run_travis_tests.sh

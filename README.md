@@ -24,6 +24,24 @@ Flink Docker image lifecycle
   https://github.com/docker-library/official-images/blob/master/library/flink).
 
 
+Development workflow
+----------------------------
+
+The `master` branch of this repository serves as a pure publishing area for releases.
+
+Development happens on the various `dev-X` branches.
+
+Pull requests for a specific version should be opened against the respective `dev-<version>` branch.
+Pull requests for all versions, or for the next minor Flink release, should be opened against the `dev-master` branch.
+
+### CI
+
+The `dev-master` branch is tested against nightly Flink snapshots for the next minor Flink version. This allows us to
+develop features in tandem with Flink.
+
+The `dev-1.x` branches are tested against the latest corresponding patch Flink release, to ensure any changes we make
+are compatible with the currently used Flink version.
+
 Workflow for new Flink releases
 -------------------------------
 
@@ -39,24 +57,30 @@ There are additional steps required when a new Flink minor version (x.y.0) is re
 
 ### Release workflow
 
-When a new release of Flink is available, the Dockerfiles in this repo should be updated and a new
+When a new release of Flink is available, the Dockerfiles in the `master` branch should be updated and a new
 manifest sent to the Docker Library [`official-images`](
 https://github.com/docker-library/official-images) repo.
 
-Updating the Dockerfiles involves 3 steps:
+The Dockerfiles are generated on the respective `dev-<version>` branches, and copied over to the `master` branch for
+publishing.
 
-1. Update `add-version.sh` with the GPG key ID of the key used to sign the new release
-    * Commit this change with message `Add GPG key for x.y.z release` <sup>\[[example](
-      https://github.com/apache/flink-docker/commit/94845f46c0f0f2de80d4a5ce309db49aff4655d0)]</sup>
-2. Remove any existing Dockerfiles from the same minor version
-    * e.g. `rm -r 1.2`, if the new Flink version is `1.2.1`
-3. Run `add-version.sh` with the appropriate arguments (`-r flink-minor-version -f
-   flink-full-version`)
-    * e.g. `./add-version.sh -r 1.2 -f 1.2.1`
-    * Commit these changes with message `Update Dockerfiles for x.y.z release` <sup>\[[example](
+Updating the Dockerfiles involves the following steps:
+
+1. Generate the Dockerfiles
+    * Checkout the `dev-x.y` branch of the respective release, e.g., dev-1.9
+    * Update `add-version.sh` with the GPG key ID of the key used to sign the new release
+        * Commit this change with message `Add GPG key for x.y.z release` <sup>\[[example](
+            https://github.com/apache/flink-docker/commit/94845f46c0f0f2de80d4a5ce309db49aff4655d0)]</sup>
+        * Create a pull request against the `dev-x.y` branch containing this commit.
+    * Run `add-version.sh` with the appropriate arguments (`-r flink-minor-version -f flink-full-version`)
+        * e.g. `./add-version.sh -r 1.2 -f 1.2.1`
+2. Update Dockerfiles on the the `master` branch
+    * Remove any existing Dockerfiles from the same minor version
+        * e.g. `rm -r 1.2`, if the new Flink version is `1.2.1`
+    * Copy the generated Dockerfiles from the `dev-x.y` branch to `master`
+    * Commit the changes with message `Update Dockerfiles for x.y.z release` <sup>\[[example](
       https://github.com/apache/flink-docker/commit/5920fd775ca1a8d03ee959d79bceeb5d6e8f35a1)]</sup>
-
-A pull request can then be opened on this repo with the changes.
+    * Create a pull request against the `master` branch containing this commit.
 
 Once the pull request has been merged, a new manifest should be generated and a pull request opened
 on the Docker Library [`official-images`](https://github.com/docker-library/official-images) repo.
@@ -79,14 +103,17 @@ available shortly thereafter.
 
 ### Release checklist
 
+Checklist for the `dev` branch:
 - [ ] The GPG key ID of the key used to sign the release has been added to `add-version.sh` and
       committed with the message `Add GPG key for x.y.z release`
+- [ ] `./add-version.sh -r x.y -f x.y.z` has been run on the respective dev branch
+
+Checklist for the `master` branch:
 - [ ] _(new minor releases only)_ any unsupported Flink minor version Dockerfiles have been removed
       (only two `x.y/` directories should be present)
 - [ ] _(new patch releases only)_ any existing generated files for the same minor version have been
       removed
-- [ ] `./add-version.sh -r x.y -f x.y.z` has been run, and the updated Dockerfiles committed with
-      the message `Update Dockerfiles for x.y.z release`
+- [ ] The updated Dockerfiles have been committed with the message `Update Dockerfiles for x.y.z release`
 - [ ] _(new minor releases only)_ the `aliases` array in `generate-stackbrew-library.sh` has been
       updated with `[x.y]='latest'` and committed with the message `Update latest image tag to x.y`
 - [ ] A pull request with the above changes has been opened on this repo and merged
