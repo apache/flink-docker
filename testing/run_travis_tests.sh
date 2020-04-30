@@ -11,14 +11,6 @@ fi
 
 BRANCH="$TRAVIS_BRANCH"
 
-if [ -n "$IS_PULL_REQUEST" ]; then
-  changed_files="$(git diff --name-only $BRANCH...HEAD)"
-
-  echo "Changed files in this pull request:"
-  echo "${changed_files}"
-  echo
-fi
-
 ./add-version.sh -r 1.9 -f 1.9.3
 
 if [ -z "$IS_PULL_REQUEST" ] && [ "$BRANCH" = "dev-1.9" ]; then
