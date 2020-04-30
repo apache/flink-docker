@@ -12,6 +12,8 @@ fi
 BRANCH="$TRAVIS_BRANCH"
 
 if [ -n "$IS_PULL_REQUEST" ]; then
+  # fetch the branch the PR opened against; we can only generate a diff against master by default
+  git fetch $BRANCH
   changed_files="$(git diff --name-only $BRANCH...HEAD)"
 
   echo "Changed files in this pull request:"
