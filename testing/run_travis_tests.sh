@@ -11,14 +11,6 @@ fi
 
 BRANCH="$TRAVIS_BRANCH"
 
-if [ -n "$IS_PULL_REQUEST" ]; then
-  changed_files="$(git diff --name-only $BRANCH...HEAD)"
-
-  echo "Changed files in this pull request:"
-  echo "${changed_files}"
-  echo
-fi
-
 ./add-custom.sh -u "https://s3.amazonaws.com/flink-nightly/flink-1.11-SNAPSHOT-bin-hadoop2.tgz"
 
 if [ -z "$IS_PULL_REQUEST" ] && [ "$BRANCH" = "dev-master" ]; then
