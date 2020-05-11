@@ -32,24 +32,24 @@ The `master` branch of this repository serves as a pure publishing area for rele
 Development happens on the various `dev-X` branches.
 
 Pull requests for a specific version should be opened against the respective `dev-<version>` branch.
-Pull requests for all versions, or for the next minor Flink release, should be opened against the `dev-master` branch.
+Pull requests for all versions, or for the next major Flink release, should be opened against the `dev-master` branch.
 
 ### CI
 
-The `dev-master` branch is tested against nightly Flink snapshots for the next minor Flink version. This allows us to
+The `dev-master` branch is tested against nightly Flink snapshots for the next major Flink version. This allows us to
 develop features in tandem with Flink.
 
-The `dev-1.x` branches are tested against the latest corresponding patch Flink release, to ensure any changes we make
+The `dev-1.x` branches are tested against the latest corresponding minor Flink release, to ensure any changes we make
 are compatible with the currently used Flink version.
 
 Workflow for new Flink releases
 -------------------------------
 
-### Notes for new Flink minor (x.y.0) releases
+### Notes for new Flink major (x.y.0) releases
 
-There are additional steps required when a new Flink minor version (x.y.0) is released.
+There are additional steps required when a new Flink major version (x.y.0) is released.
 
-* Since only the current and previous minor versions of Flink are supported, the Dockerfiles for
+* Since only the current and previous major versions of Flink are supported, the Dockerfiles for
   older versions must be removed when adding the new version to this repo
 * The new images should be given the `latest` tag, so the `aliases` array in
   `generate-stackbrew-library.sh` must be updated
@@ -72,10 +72,10 @@ Updating the Dockerfiles involves the following steps:
         * Commit this change with message `Add GPG key for x.y.z release` <sup>\[[example](
             https://github.com/apache/flink-docker/commit/94845f46c0f0f2de80d4a5ce309db49aff4655d0)]</sup>
         * Create a pull request against the `dev-x.y` branch containing this commit.
-    * Run `add-version.sh` with the appropriate arguments (`-r flink-minor-version -f flink-full-version`)
+    * Run `add-version.sh` with the appropriate arguments (`-r flink-major-version -f flink-full-version`)
         * e.g. `./add-version.sh -r 1.2 -f 1.2.1`
 2. Update Dockerfiles on the the `master` branch
-    * Remove any existing Dockerfiles from the same minor version
+    * Remove any existing Dockerfiles from the same major version
         * e.g. `rm -r 1.2`, if the new Flink version is `1.2.1`
     * Copy the generated Dockerfiles from the `dev-x.y` branch to `master`
     * Commit the changes with message `Update Dockerfiles for x.y.z release` <sup>\[[example](
@@ -109,12 +109,12 @@ Checklist for the `dev` branch:
 - [ ] `./add-version.sh -r x.y -f x.y.z` has been run on the respective dev branch
 
 Checklist for the `master` branch:
-- [ ] _(new minor releases only)_ any unsupported Flink minor version Dockerfiles have been removed
+- [ ] _(new major releases only)_ any unsupported Flink major version Dockerfiles have been removed
       (only two `x.y/` directories should be present)
-- [ ] _(new patch releases only)_ any existing generated files for the same minor version have been
+- [ ] _(new minor releases only)_ any existing generated files for the same major version have been
       removed
 - [ ] The updated Dockerfiles have been committed with the message `Update Dockerfiles for x.y.z release`
-- [ ] _(new minor releases only)_ the `aliases` array in `generate-stackbrew-library.sh` has been
+- [ ] _(new major releases only)_ the `aliases` array in `generate-stackbrew-library.sh` has been
       updated with `[x.y]='latest'` and committed with the message `Update latest image tag to x.y`
 - [ ] A pull request with the above changes has been opened on this repo and merged
 - [ ] The new library manifest has been generated with `generate-stackbrew-library.sh` and a pull
