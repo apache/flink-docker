@@ -11,7 +11,7 @@ fi
 
 BRANCH="$TRAVIS_BRANCH"
 
-./add-version.sh -r 1.10 -f 1.10.0
+./add-version.sh -r 1.10 -f 1.10.1
 
 if [ -z "$IS_PULL_REQUEST" ] && [ "$BRANCH" = "dev-1.10" ]; then
   smoke_test_all_images
