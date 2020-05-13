@@ -44,10 +44,10 @@ RUN set -ex; \
   gosu nobody true
 
 # Configure Flink version
-ENV FLINK_TGZ_URL=https://www.apache.org/dyn/closer.cgi?action=download&filename=flink/flink-1.10.0/flink-1.10.0-bin-scala_2.12.tgz \
-    FLINK_ASC_URL=https://www.apache.org/dist/flink/flink-1.10.0/flink-1.10.0-bin-scala_2.12.tgz.asc \
-    GPG_KEY=BB137807CEFBE7DD2616556710B12A1F89C115E8 \
-    SKIP_GPG=false
+ENV FLINK_TGZ_URL=https://www.apache.org/dyn/closer.cgi?action=download&filename=flink/flink-1.10.1/flink-1.10.1-bin-scala_2.12.tgz \
+    FLINK_ASC_URL=https://www.apache.org/dist/flink/flink-1.10.1/flink-1.10.1-bin-scala_2.12.tgz.asc \
+    GPG_KEY=D8D3D42E84C753CA5F170BDF93C07902771AB743 \
+    CHECK_GPG=true
 
 # Prepare environment
 ENV FLINK_HOME=/opt/flink
@@ -60,7 +60,7 @@ WORKDIR $FLINK_HOME
 RUN set -ex; \
   wget -nv -O flink.tgz "$FLINK_TGZ_URL"; \
   \
-  if [ "$SKIP_GPG" = "false" ]; then \
+  if [ "$CHECK_GPG" = "true" ]; then \
     wget -nv -O flink.tgz.asc "$FLINK_ASC_URL"; \
     export GNUPGHOME="$(mktemp -d)"; \
     for server in ha.pool.sks-keyservers.net $(shuf -e \
