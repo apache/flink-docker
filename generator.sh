@@ -15,7 +15,11 @@ function generateDockerfile {
     java_version=$6
     source_variant=$7
 
-    from_docker_image="openjdk:${java_version}-jre"
+    if [[ `uname -i` == 'aarch64' ]]; then
+        from_docker_image="arm64v8/openjdk:${java_version}-jre"
+    else
+        from_docker_image="openjdk:${java_version}-jre"
+    fi
 
     cp docker-entrypoint.sh "$dir/docker-entrypoint.sh"
 
