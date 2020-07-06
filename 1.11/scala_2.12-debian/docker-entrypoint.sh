@@ -18,6 +18,8 @@
 # limitations under the License.
 ###############################################################################
 
+COMMAND_STANDALONE="standalone-job"
+
 # If unspecified, the hostname of the container is taken as the JobManager address
 JOB_MANAGER_RPC_ADDRESS=${JOB_MANAGER_RPC_ADDRESS:-$(hostname -f)}
 CONF_FILE="${FLINK_HOME}/conf/flink-conf.yaml"
@@ -77,11 +79,7 @@ set_common_options() {
     set_config_option query.server.port 6125
 }
 
-if [ "$1" = "help" ]; then
-    echo "Usage: $(basename "$0") (jobmanager|taskmanager|help)"
-    exit 0
-elif [ "$1" = "jobmanager" ]; then
-    shift 1
+prepare_job_manager_start() {
     echo "Starting Job Manager"
     copy_plugins_if_required
 
@@ -91,8 +89,21 @@ elif [ "$1" = "jobmanager" ]; then
         echo "${FLINK_PROPERTIES}" >> "${CONF_FILE}"
     fi
     envsubst < "${CONF_FILE}" > "${CONF_FILE}.tmp" && mv "${CONF_FILE}.tmp" "${CONF_FILE}"
+}
+
+if [ "$1" = "help" ]; then
+    echo "Usage: $(basename "$0") (jobmanager|${COMMAND_STANDALONE}|taskmanager|help)"
+    exit 0
+elif [ "$1" = "jobmanager" ]; then
+    shift 1
+    prepare_job_manager_start
 
     exec $(drop_privs_cmd) "$FLINK_HOME/bin/jobmanager.sh" start-foreground "$@"
+elif [ "$1" = ${COMMAND_STANDALONE} ]; then
+    shift 1
+    prepare_job_manager_start
+
+    exec $(drop_privs_cmd) "$FLINK_HOME/bin/standalone-job.sh" start-foreground "$@"
 elif [ "$1" = "taskmanager" ]; then
     shift 1
     echo "Starting Task Manager"
