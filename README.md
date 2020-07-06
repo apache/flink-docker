@@ -67,17 +67,18 @@ publishing.
 Updating the Dockerfiles involves the following steps:
 
 1. Generate the Dockerfiles
-    * Checkout the `dev-x.y` branch of the respective release, e.g., dev-1.9
+    * Checkout the `dev-x.y`(minor release)/`dev-master`(major release) branch of the respective release, e.g., dev-1.9
     * Update `add-version.sh` with the GPG key ID of the key used to sign the new release
         * Commit this change with message `Add GPG key for x.y.z release` <sup>\[[example](
             https://github.com/apache/flink-docker/commit/94845f46c0f0f2de80d4a5ce309db49aff4655d0)]</sup>
-        * Create a pull request against the `dev-x.y` branch containing this commit.
+    * (minor only) Update `testing/run_travis_tests.sh` to test against the new minor version.
+    * Create a pull request against the `dev-x.y`/`dev-master` branch containing these commits.
     * Run `add-version.sh` with the appropriate arguments (`-r flink-major-version -f flink-full-version`)
         * e.g. `./add-version.sh -r 1.2 -f 1.2.1`
 2. Update Dockerfiles on the the `master` branch
     * Remove any existing Dockerfiles from the same major version
         * e.g. `rm -r 1.2`, if the new Flink version is `1.2.1`
-    * Copy the generated Dockerfiles from the `dev-x.y` branch to `master`
+    * Copy the generated Dockerfiles from the `dev-x.y`/`dev-master` branch to `master`
     * Commit the changes with message `Update Dockerfiles for x.y.z release` <sup>\[[example](
       https://github.com/apache/flink-docker/commit/5920fd775ca1a8d03ee959d79bceeb5d6e8f35a1)]</sup>
     * Create a pull request against the `master` branch containing this commit.
@@ -100,6 +101,11 @@ https://github.com/docker-library/official-images/pull/7378)]</sup>
 Once the pull request has been merged (often within 1 business day), the new images will be
 available shortly thereafter.
 
+For new major Flink releases, once the new image is available, the `dev-x.y` branch must be created:
+1. Create the branch based on `dev-master`
+2. update `testing/run_travis_tests.sh`:
+    * replace usage of `./add-custom.sh` with `./add-version.sh -r x.y -f x.y.0`
+    * replace references to `dev-master` with `dev-x.y`
 
 ### Release checklist
 
