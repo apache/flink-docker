@@ -95,7 +95,6 @@ for scala_version in "${scala_versions[@]}"; do
 
     # Extract the full Flink version from the Dockerfile
     flink_version="$(git show "$commit":"$dir/Dockerfile" | grep 'dist/flink/flink-[0-9.]*' | cut -d/ -f6 | cut -d- -f2)"
-    echo $flink_version
 
     full_version=$flink_version-scala_$scala_version
 
