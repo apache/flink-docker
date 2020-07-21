@@ -11,9 +11,9 @@ fi
 
 BRANCH="$TRAVIS_BRANCH"
 
-./add-custom.sh -u "https://s3.amazonaws.com/flink-nightly/flink-1.11-SNAPSHOT-bin-hadoop2.tgz"
+./add-version.sh -r 1.11 -f 1.11.0
 
-if [ -z "$IS_PULL_REQUEST" ] && [ "$BRANCH" = "dev-master" ]; then
+if [ -z "$IS_PULL_REQUEST" ] && [ "$BRANCH" = "dev-1.11" ]; then
   smoke_test_all_images
   smoke_test_one_image_non_root
 else
