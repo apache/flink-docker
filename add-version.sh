@@ -10,7 +10,6 @@
 #
 # See other repos (e.g. httpd, cassandra) for update.sh examples.
 
-source "$(dirname "$0")"/common.sh
 
 function usage() {
     echo >&2 "usage: $0 -r flink-release -f flink-version"
@@ -98,6 +97,8 @@ fi
 
 mkdir "$flink_release"
 
+source "$(dirname "$0")"/generator.sh
+
 echo -n >&2 "Generating Dockerfiles..."
 for source_variant in "${SOURCE_VARIANTS[@]}"; do
     for scala_version in "${scala_versions[@]}"; do
@@ -109,7 +110,7 @@ for source_variant in "${SOURCE_VARIANTS[@]}"; do
         # Not all mirrors have the .asc files
         flink_asc_url=https://www.apache.org/dist/${flink_url_file_path}.asc
 
-        generate "${dir}" "${flink_tgz_url}" "${flink_asc_url}" ${gpg_key} true ${source_variant}
+        generate "${dir}" "${flink_tgz_url}" "${flink_asc_url}" ${gpg_key} true ${flink_release} ${flink_version} ${scala_version} ${source_variant}
     done
 done
 echo >&2 " done."
