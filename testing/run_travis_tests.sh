@@ -11,14 +11,12 @@ fi
 
 BRANCH="$TRAVIS_BRANCH"
 
-./add-version.sh -r 1.11 -f 1.11.0
+./add-version.sh -r 1.11 -f 1.11.1
 
-if [ -z "$IS_PULL_REQUEST" ] && [ "$BRANCH" = "dev-1.11" ]; then
-  smoke_test_all_images
-  smoke_test_one_image_non_root
-else
-  # For pull requests and branches, test one image
-  smoke_test_one_image
-fi
+smoke_test_all_images
+smoke_test_one_image_non_root
+
+
+echo "Test successfully finished"
 
 # vim: et ts=2 sw=2
