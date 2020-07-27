@@ -4,22 +4,26 @@
 # Flink distribution.
 # This is exlusively for development purposes.
 
-source "$(dirname "$0")"/common.sh
+source "$(dirname "$0")"/generator.sh
 
 function usage() {
-    echo >&2 "usage: $0 -u binary-download-url [-n name]"
+    echo >&2 "usage: $0 -u binary-download-url [-n name] [-j java_version]"
 }
 
 binary_download_url=
 name=custom
+java_version=8
 
-while getopts u:n:h arg; do
+while getopts u:n:j:h arg; do
   case "$arg" in
     u)
       binary_download_url=$OPTARG
       ;;
     n)
       name=$OPTARG
+      ;;
+    j)
+      java_version=$OPTARG
       ;;
     h)
       usage
@@ -43,7 +47,7 @@ echo -n >&2 "Generating Dockerfiles..."
 for source_variant in "${SOURCE_VARIANTS[@]}"; do
   dir="dev/${name}-${source_variant}"
   rm -rf "${dir}"
-
-  generate "${dir}" "${binary_download_url}" "" "" false ${source_variant}
+  mkdir "$dir"
+  generateDockerfile "${dir}" "${binary_download_url}" "" "" false ${java_version} ${source_variant}
 done
 echo >&2 " done."
