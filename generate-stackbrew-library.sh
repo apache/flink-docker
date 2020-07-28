@@ -11,8 +11,6 @@ set -eu
 self="$(basename "$BASH_SOURCE")"
 cd "$(dirname "$(readlink -f "$BASH_SOURCE")")"
 
-# remove "latest" and any "scala_" tag, unless it is the latest version
-PRUNE_FROM_NON_LATEST_VERSION="^(latest$|scala\_/*)"
 
 # get the most recent commit which modified any of "$@"
 fileCommit() {
@@ -47,16 +45,9 @@ pruneTags() {
         # tagsString contains latest version. keep "latest" tag
         echo $inTagsString
     else
-        # split list of tags, remove anything containing "latest"
-        IFS=', ' read -r -a inTags <<< "$inTagsString"
-        local outString=""
-        for inTag in "${inTags[@]}"; do
-            if [[ $inTag =~ $PRUNE_FROM_NON_LATEST_VERSION ]]; then
-                continue;
-            fi
-            outString="$outString, $inTag"
-        done
-        echo ${outString:2}
+        # remove "latest" and any "scala_" tag, unless it is the latest version
+        # the "scala_" tag has a similar semantic as the "latest" tag in docker registries. 
+        echo $inTagsString | sed -E 's|,(scala\|latest)[-_[:alnum:]]*||g'
     fi
 }
 
@@ -64,7 +55,7 @@ extractValue() {
     local key="$1"
     local file="$2"
     local line=$(cat $file | grep "$key:")
-    echo $line | cut -d ':' -f 2 | xargs # remove key from line, remove whitespace
+    echo $line | cut -d ':' -f 2 | tr -d ' ' # remove key from line, remove whitespace
 }
 
 # get latest flink version
