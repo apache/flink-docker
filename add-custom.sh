@@ -43,7 +43,7 @@ echo -n >&2 "Generating Dockerfiles..."
 for source_variant in "${SOURCE_VARIANTS[@]}"; do
   dir="dev/${name}-${source_variant}"
   rm -rf "${dir}"
-
-  generate "${dir}" "${binary_download_url}" "" "" false ${name} ${name} "undef_scala" ${source_variant}
+  mkdir "$dir"
+  generateDockerfile "${dir}" "${binary_download_url}" "" "" false 8 ${source_variant}
 done
 echo >&2 " done."
