@@ -53,6 +53,20 @@ function generateReleaseMetadata {
 
     tags="$full_tag, $short_tag, $scala_tag"
 
+    if [[ "$java_version" == "$DEFAULT_JAVA" ]]; then
+        # example "1.2.0-scala_2.11"
+        full_tag=${flink_version}-scala_${scala_version}
+
+        # example "1.2-scala_2.11"
+        short_tag=${flink_release}-scala_${scala_version}
+
+        # example "scala_2.12"
+        scala_tag="scala_${scala_version}"
+
+        tags="$tags, $full_tag, $short_tag, $scala_tag"
+    fi
+
+
     if [[ "$scala_version" == "$DEFAULT_SCALA" ]]; then
         # we are generating the image for the latest scala version, add:
         # "1.2.0-java11"
