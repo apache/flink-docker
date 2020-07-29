@@ -7,19 +7,23 @@
 source "$(dirname "$0")"/generator.sh
 
 function usage() {
-    echo >&2 "usage: $0 -u binary-download-url [-n name]"
+    echo >&2 "usage: $0 -u binary-download-url [-n name] [-j java_version]"
 }
 
 binary_download_url=
 name=custom
+java_version=8
 
-while getopts u:n:h arg; do
+while getopts u:n:j:h arg; do
   case "$arg" in
     u)
       binary_download_url=$OPTARG
       ;;
     n)
       name=$OPTARG
+      ;;
+    j)
+      java_version=$OPTARG
       ;;
     h)
       usage
@@ -44,6 +48,6 @@ for source_variant in "${SOURCE_VARIANTS[@]}"; do
   dir="dev/${name}-${source_variant}"
   rm -rf "${dir}"
   mkdir "$dir"
-  generateDockerfile "${dir}" "${binary_download_url}" "" "" false 8 ${source_variant}
+  generateDockerfile "${dir}" "${binary_download_url}" "" "" false ${java_version} ${source_variant}
 done
 echo >&2 " done."
