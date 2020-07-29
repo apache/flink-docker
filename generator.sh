@@ -2,10 +2,9 @@
 
 export SOURCE_VARIANTS=(debian )
 
-export LATEST_SCALA="2.12"
-export LATEST_JAVA="8"
+export DEFAULT_SCALA="2.12"
+export DEFAULT_JAVA="8"
 
-# generate "Dockerfile" file
 function generateDockerfile {
     # define variables
     dir=$1
@@ -17,8 +16,6 @@ function generateDockerfile {
     source_variant=$7
 
     from_docker_image="openjdk:${java_version}-jre"
-
-    source_file="Dockerfile-debian"
 
     cp docker-entrypoint.sh "$dir/docker-entrypoint.sh"
 
@@ -32,10 +29,9 @@ function generateDockerfile {
         -e "s/%%GPG_KEY%%/$gpg_key/" \
         -e "s/%%CHECK_GPG%%/${check_gpg}/" \
         -e "s/%%FROM_IMAGE%%/${from_docker_image}/" \
-        "$source_file.template" > "$dir/Dockerfile"
+        "Dockerfile-$source_variant.template" > "$dir/Dockerfile"
 }
 
-# generate "release.metadata" file
 function generateReleaseMetadata {
     dir=$1
     flink_release=$2
@@ -57,14 +53,14 @@ function generateReleaseMetadata {
 
     tags="$full_tag, $short_tag, $scala_tag"
 
-    if [[ "$scala_version" == "$LATEST_SCALA" ]]; then
+    if [[ "$scala_version" == "$DEFAULT_SCALA" ]]; then
         # we are generating the image for the latest scala version, add:
         # "1.2.0-java11"
         # "1.2-java11"
         # "latest-java11"
         tags="$tags, ${flink_version}${java_suffix}, ${flink_release}${java_suffix}, latest${java_suffix}"
 
-        if [[ "$java_version" == "$LATEST_JAVA" ]]; then
+        if [[ "$java_version" == "$DEFAULT_JAVA" ]]; then
             # we are generating the image for the default java version, add tags w/o java tag:
             # "1.2.0"
             # "1.2"
