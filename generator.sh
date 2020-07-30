@@ -72,7 +72,7 @@ function generateReleaseMetadata {
         # "1.2.0-java11"
         # "1.2-java11"
         # "latest-java11"
-        tags="$tags, ${flink_version}${java_suffix}, ${flink_release}${java_suffix}, latest${java_suffix}"
+        tags="$tags, ${flink_version}${java_suffix}, ${flink_release}${java_suffix}, java${java_version}"
 
         if [[ "$java_version" == "$DEFAULT_JAVA" ]]; then
             # we are generating the image for the default java version, add tags w/o java tag:
