@@ -4,7 +4,7 @@
 # Flink distribution.
 # This is exlusively for development purposes.
 
-source "$(dirname "$0")"/common.sh
+source "$(dirname "$0")"/generator.sh
 
 function usage() {
     echo >&2 "usage: $0 -u binary-download-url [-n name]"
@@ -43,7 +43,7 @@ echo -n >&2 "Generating Dockerfiles..."
 for source_variant in "${SOURCE_VARIANTS[@]}"; do
   dir="dev/${name}-${source_variant}"
   rm -rf "${dir}"
-
-  generate "${dir}" "${binary_download_url}" "" "" false ${source_variant}
+  mkdir "$dir"
+  generateDockerfile "${dir}" "${binary_download_url}" "" "" false ${source_variant}
 done
 echo >&2 " done."
