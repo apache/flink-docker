@@ -16,7 +16,7 @@ function generateDockerfile {
     source_variant=$7
 
     if [[ `uname -i` == 'aarch64' ]]; then
-        from_docker_image="arm64v8/openjdk:${java_version}-jre"
+        from_docker_image="arm64v8\/openjdk:${java_version}-jre"
     else
         from_docker_image="openjdk:${java_version}-jre"
     fi
