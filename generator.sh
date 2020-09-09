@@ -15,6 +15,7 @@ function generateDockerfile {
     java_version=$6
     source_variant=$7
 
+    # TODO: Remove this aarch64 condition once all required docker images support arm64 originally.
     if [[ `uname -i` == 'aarch64' ]]; then
         from_docker_image="arm64v8\/openjdk:${java_version}-jre"
     else
