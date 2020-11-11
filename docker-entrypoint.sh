@@ -21,6 +21,7 @@
 COMMAND_STANDALONE="standalone-job"
 COMMAND_NATIVE_KUBERNETES="native-k8s"
 COMMAND_HISTORY_SERVER="history-server"
+COMMAND_DISABLE_JEMALLOC="disablejemalloc"
 
 # If unspecified, the hostname of the container is taken as the JobManager address
 JOB_MANAGER_RPC_ADDRESS=${JOB_MANAGER_RPC_ADDRESS:-$(hostname -f)}
@@ -93,21 +94,49 @@ prepare_job_manager_start() {
     envsubst < "${CONF_FILE}" > "${CONF_FILE}.tmp" && mv "${CONF_FILE}.tmp" "${CONF_FILE}"
 }
 
+disable_jemalloc_env() {
+  if [ "$1" = ${COMMAND_DISABLE_JEMALLOC} ]; then
+      echo "Disable Jemalloc as the memory allocator"
+      return 0
+  else
+      echo "Enable Jemalloc as the memory allocator via appending env variable LD_PRELOAD with /usr/lib/x86_64-linux-gnu/libjemalloc.so"
+      export LD_PRELOAD=$LD_PRELOAD:/usr/lib/x86_64-linux-gnu/libjemalloc.so
+      return 1
+  fi
+}
+
 if [ "$1" = "help" ]; then
-    echo "Usage: $(basename "$0") (jobmanager|${COMMAND_STANDALONE}|taskmanager|${COMMAND_NATIVE_KUBERNETES}|${COMMAND_HISTORY_SERVER}|help)"
+    printf "Usage: $(basename "$0") (jobmanager|${COMMAND_STANDALONE}|taskmanager|${COMMAND_NATIVE_KUBERNETES}|${COMMAND_HISTORY_SERVER}) [${COMMAND_DISABLE_JEMALLOC}]\n"
+    printf "    Or $(basename "$0") help\n\n"
+    printf "By default, Flink image adopts jemalloc as default memory allocator and will disable jemalloc if option '${COMMAND_DISABLE_JEMALLOC}' given.\n"
     exit 0
 elif [ "$1" = "jobmanager" ]; then
     shift 1
+    disable_jemalloc_env $@
+    disabled_jemalloc="$?"
+    if [ ${disabled_jemalloc} = 0 ]; then
+      shift 1
+    fi
     prepare_job_manager_start
 
     exec $(drop_privs_cmd) "$FLINK_HOME/bin/jobmanager.sh" start-foreground "$@"
 elif [ "$1" = ${COMMAND_STANDALONE} ]; then
     shift 1
+    disable_jemalloc_env $@
+    disabled_jemalloc="$?"
+    if [ ${disabled_jemalloc} = 0 ]; then
+      shift 1
+    fi
     prepare_job_manager_start
 
     exec $(drop_privs_cmd) "$FLINK_HOME/bin/standalone-job.sh" start-foreground "$@"
 elif [ "$1" = ${COMMAND_HISTORY_SERVER} ]; then
     shift 1
+    disable_jemalloc_env $@
+    disabled_jemalloc="$?"
+    if [ ${disabled_jemalloc} = 0 ]; then
+      shift 1
+    fi
     echo "Starting History Server"
     copy_plugins_if_required
 
@@ -119,6 +148,11 @@ elif [ "$1" = ${COMMAND_HISTORY_SERVER} ]; then
     exec $(drop_privs_cmd) "$FLINK_HOME/bin/historyserver.sh" start-foreground "$@"
 elif [ "$1" = "taskmanager" ]; then
     shift 1
+    disable_jemalloc_env $@
+    disabled_jemalloc="$?"
+    if [ ${disabled_jemalloc} = 0 ]; then
+      shift 1
+    fi
     echo "Starting Task Manager"
     copy_plugins_if_required
 
@@ -135,6 +169,11 @@ elif [ "$1" = "taskmanager" ]; then
     exec $(drop_privs_cmd) "$FLINK_HOME/bin/taskmanager.sh" start-foreground "$@"
 elif [ "$1" = "$COMMAND_NATIVE_KUBERNETES" ]; then
     shift 1
+    disable_jemalloc_env $@
+    disabled_jemalloc="$?"
+    if [ ${disabled_jemalloc} = 0 ]; then
+      shift 1
+    fi
     copy_plugins_if_required
 
     export _FLINK_HOME_DETERMINED=true
