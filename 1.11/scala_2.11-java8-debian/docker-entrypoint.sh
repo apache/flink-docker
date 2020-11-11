@@ -91,21 +91,47 @@ prepare_job_manager_start() {
     envsubst < "${CONF_FILE}" > "${CONF_FILE}.tmp" && mv "${CONF_FILE}.tmp" "${CONF_FILE}"
 }
 
+disable_jemalloc_env() {
+  if [ "$1" = "disablejemalloc" ]; then
+      echo "Disable Jemalloc as memory allocator" 
+      return 0
+  else
+      echo "Enable Jemalloc via appending env variable LD_PRELOAD with /usr/lib/x86_64-linux-gnu/libjemalloc.so"
+      export LD_PRELOAD=$LD_PRELOAD:/usr/lib/x86_64-linux-gnu/libjemalloc.so
+      return 1
+  fi
+}
+
 if [ "$1" = "help" ]; then
     echo "Usage: $(basename "$0") (jobmanager|${COMMAND_STANDALONE}|taskmanager|help)"
     exit 0
 elif [ "$1" = "jobmanager" ]; then
     shift 1
+    disable_jemalloc_env $@
+    disabled_jemalloc="$?"
+    if [ ${disabled_jemalloc} = 0 ]; then 
+      shift 1
+    fi
     prepare_job_manager_start
 
     exec $(drop_privs_cmd) "$FLINK_HOME/bin/jobmanager.sh" start-foreground "$@"
 elif [ "$1" = ${COMMAND_STANDALONE} ]; then
     shift 1
+    disable_jemalloc_env $@
+    disabled_jemalloc="$?"
+    if [ ${disabled_jemalloc} = 0 ]; then 
+      shift 1
+    fi
     prepare_job_manager_start
 
     exec $(drop_privs_cmd) "$FLINK_HOME/bin/standalone-job.sh" start-foreground "$@"
 elif [ "$1" = "taskmanager" ]; then
     shift 1
+    disable_jemalloc_env $@
+    disabled_jemalloc="$?"
+    if [ ${disabled_jemalloc} = 0 ]; then 
+      shift 1
+    fi
     echo "Starting Task Manager"
     copy_plugins_if_required
 
