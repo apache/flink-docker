@@ -95,6 +95,7 @@ prepare_job_manager_start() {
 }
 
 disable_jemalloc_env() {
+  # use nameref '_args' to update the passed 'args' within function
   local -n _args=$1
   if [ "${_args[0]}" = ${COMMAND_DISABLE_JEMALLOC} ]; then
       echo "Disable Jemalloc as the memory allocator"
