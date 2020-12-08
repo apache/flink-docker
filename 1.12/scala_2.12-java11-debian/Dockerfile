@@ -16,12 +16,12 @@
 # limitations under the License.
 ###############################################################################
 
-FROM openjdk:8-jre
+FROM openjdk:11-jre
 
 # Install dependencies
 RUN set -ex; \
   apt-get update; \
-  apt-get -y install libsnappy1v5 gettext-base; \
+  apt-get -y install libsnappy1v5 gettext-base libjemalloc-dev; \
   rm -rf /var/lib/apt/lists/*
 
 # Grab gosu for easy step-down from root
@@ -44,9 +44,9 @@ RUN set -ex; \
   gosu nobody true
 
 # Configure Flink version
-ENV FLINK_TGZ_URL=https://www.apache.org/dyn/closer.cgi?action=download&filename=flink/flink-1.10.2/flink-1.10.2-bin-scala_2.12.tgz \
-    FLINK_ASC_URL=https://www.apache.org/dist/flink/flink-1.10.2/flink-1.10.2-bin-scala_2.12.tgz.asc \
-    GPG_KEY=C63E230EFFF519A5BBF2C9AE6767487CD505859C \
+ENV FLINK_TGZ_URL=https://www.apache.org/dyn/closer.cgi?action=download&filename=flink/flink-1.12.0/flink-1.12.0-bin-scala_2.12.tgz \
+    FLINK_ASC_URL=https://www.apache.org/dist/flink/flink-1.12.0/flink-1.12.0-bin-scala_2.12.tgz.asc \
+    GPG_KEY=D9839159 \
     CHECK_GPG=true
 
 # Prepare environment
