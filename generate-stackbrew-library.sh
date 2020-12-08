@@ -47,7 +47,7 @@ pruneTags() {
     else
         # remove "latest" and any "scala_" tag, unless it is the latest version
         # the "scala_" tag has a similar semantic as the "latest" tag in docker registries. 
-        echo $tags | sed -E 's|, (scala\|latest)[-_.[:alnum:]]*||g'
+        echo $tags | sed -E 's|, (scala\|latest\|java[0-9]{1,2})[-_.[:alnum:]]*||g'
     fi
 }
 
