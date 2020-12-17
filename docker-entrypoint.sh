@@ -19,6 +19,7 @@
 ###############################################################################
 
 COMMAND_STANDALONE="standalone-job"
+# Deprecated, should be remove in Flink release 1.13
 COMMAND_NATIVE_KUBERNETES="native-k8s"
 COMMAND_HISTORY_SERVER="history-server"
 COMMAND_DISABLE_JEMALLOC="disable-jemalloc"
@@ -108,7 +109,7 @@ disable_jemalloc_env() {
 
 args=("$@")
 if [ "$1" = "help" ]; then
-    printf "Usage: $(basename "$0") (jobmanager|${COMMAND_STANDALONE}|taskmanager|${COMMAND_NATIVE_KUBERNETES}|${COMMAND_HISTORY_SERVER}) [${COMMAND_DISABLE_JEMALLOC}]\n"
+    printf "Usage: $(basename "$0") (jobmanager|${COMMAND_STANDALONE}|taskmanager|${COMMAND_HISTORY_SERVER}) [${COMMAND_DISABLE_JEMALLOC}]\n"
     printf "    Or $(basename "$0") help\n\n"
     printf "By default, Flink image adopts jemalloc as default memory allocator and will disable jemalloc if option '${COMMAND_DISABLE_JEMALLOC}' given.\n"
     exit 0
@@ -171,4 +172,16 @@ elif [ "$1" = "$COMMAND_NATIVE_KUBERNETES" ]; then
     exec $(drop_privs_cmd) bash -c "${args[@]}"
 fi
 
-exec "$@"
+args=("${args[@]}")
+
+disable_jemalloc_env args
+
+copy_plugins_if_required
+
+# Set the Flink related environments
+export _FLINK_HOME_DETERMINED=true
+. $FLINK_HOME/bin/config.sh
+export FLINK_CLASSPATH="`constructFlinkClassPath`:$INTERNAL_HADOOP_CLASSPATHS"
+
+echo "Running command in pass-through mode: ${args[@]}"
+exec $(drop_privs_cmd) "${args[@]}"
