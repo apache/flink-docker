@@ -58,10 +58,10 @@ WORKDIR $FLINK_HOME
 
 # Install Flink
 RUN set -ex; \
-  wget -nv -O flink.tgz "$FLINK_TGZ_URL"; \
+  wget -O flink.tgz "$FLINK_TGZ_URL"; \
   \
   if [ "$CHECK_GPG" = "true" ]; then \
-    wget -nv -O flink.tgz.asc "$FLINK_ASC_URL"; \
+    wget -O flink.tgz.asc "$FLINK_ASC_URL"; \
     export GNUPGHOME="$(mktemp -d)"; \
     for server in ha.pool.sks-keyservers.net $(shuf -e \
                             hkp://p80.pool.sks-keyservers.net:80 \
