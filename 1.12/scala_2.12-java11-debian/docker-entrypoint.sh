@@ -102,7 +102,6 @@ disable_jemalloc_env() {
       echo "Disable Jemalloc as the memory allocator"
       _args=("${_args[@]:1}")
   else
-      echo "Enable Jemalloc as the memory allocator via appending env variable LD_PRELOAD with /usr/lib/x86_64-linux-gnu/libjemalloc.so"
       export LD_PRELOAD=$LD_PRELOAD:/usr/lib/x86_64-linux-gnu/libjemalloc.so
   fi
 }
@@ -183,5 +182,5 @@ export _FLINK_HOME_DETERMINED=true
 . $FLINK_HOME/bin/config.sh
 export FLINK_CLASSPATH="`constructFlinkClassPath`:$INTERNAL_HADOOP_CLASSPATHS"
 
-echo "Running command in pass-through mode: ${args[@]}"
+# Running command in pass-through mode
 exec $(drop_privs_cmd) "${args[@]}"
