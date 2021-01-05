@@ -17,46 +17,45 @@
 # limitations under the License.
 #
 
-# This script generates a manifest compatibile with the expectations set forth
-# by docker-library/official-images.
-#
-# It is not compatible with the version of Bash currently shipped with OS X due
-# to the use of features introduced in Bash 4.
-
-set -eu
+# This script publishes the Flink docker images to any Docker registry. By default it's configured to the apache/flink DockerHub account.
 
 self="$(basename "$BASH_SOURCE")"
 cd "$(dirname "$(readlink -f "$BASH_SOURCE")")"
 
 source common.sh
 
-cat <<-EOH
-# this file is generated via https://github.com/apache/flink-docker/blob/$(fileCommit "$self")/$self
+TARGET_REGISTRY=${TARGET_REGISTRY:-"apache/flink"}
 
-Maintainers: Patrick Lucas <me@patricklucas.com> (@patricklucas),
-             Ismaël Mejía <iemejia@gmail.com> (@iemejia)
-GitRepo: https://github.com/apache/flink-docker.git
-EOH
-
+echo "Publishing to target registry: $TARGET_REGISTRY"
 
 for dockerfile in $(find . -name "Dockerfile"); do
     dir=$(dirname $dockerfile)
 
-    commit="$(dirCommit "$dir")"
     metadata="$dir/release.metadata"
-    architectures=$(extractValue "Architectures" $metadata)
     tags=$(extractValue "Tags" $metadata)
     tags=$(pruneTags "$tags" $latest_version)
 
-    # newline
-    echo
+    echo "Building image in $dir"
 
-    # The tabs here are necessary for the heredoc to work right
-    cat <<-EOE
-		Tags: $tags
-		Architectures: $architectures
-		GitCommit: $commit
-		Directory: $dir
-	EOE
+    DOCKER_BUILD_CMD="docker build"
+    DOCKER_PUSH_CMDS=()
+    IFS=',' read -ra TAGS_ARRAY <<< "$tags"
+	for raw_tag in "${TAGS_ARRAY[@]}"; do
+		# trim whitespace
+		tag=`echo $raw_tag | xargs`
+	    DOCKER_BUILD_CMD+=" -t $TARGET_REGISTRY:$tag"
+	    DOCKER_PUSH_CMDS+=( "docker push $TARGET_REGISTRY:$tag")
+	done
+	DOCKER_BUILD_CMD+=" $dir"
+	echo -e "\tBuilding docker image using command"
+	echo -e "\t\t$DOCKER_BUILD_CMD"
+	eval $DOCKER_BUILD_CMD
+	echo -e "\tPushing tags"
+	for push_cmd in "${DOCKER_PUSH_CMDS[@]}"; do
+		echo -e "\t\tPushing using $push_cmd"
+		eval $push_cmd
+	done
 
+	#newline
+	echo
 done

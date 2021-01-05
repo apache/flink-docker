@@ -2,7 +2,7 @@ Apache Flink Docker Images
 ==========================
 
 This repo contains Dockerfiles for building Docker images for Apache Flink, and are used to build
-the "official" [`flink`](https://hub.docker.com/_/flink) images hosted on Docker Hub.
+the "official" [`flink`](https://hub.docker.com/_/flink) images hosted on Docker Hub (reviewed and build by Docker), as well as the images published on [`apache/flink` DockerHub](https://hub.docker.com/r/apache/flink) (maintained by Flink committers).
 
 These Dockerfiles are maintained by the Apache Flink community, but the Docker community is
 responsible for building and hosting the images on Docker Hub.
@@ -83,7 +83,14 @@ Updating the Dockerfiles involves the following steps:
       https://github.com/apache/flink-docker/commit/5920fd775ca1a8d03ee959d79bceeb5d6e8f35a1)]</sup>
     * Create a pull request against the `master` branch containing this commit.
 
-Once the pull request has been merged, a new manifest should be generated and a pull request opened
+Once the pull request has been merged, we can release the new docker images:
+
+For **publishing to DockerHub: apache/flink** , you need to perform the following steps:
+
+1. Make sure that you are authenticated with your Docker ID, and that your Docker ID has access to `apache/flink`. If not, request access by INFRA (see [also](https://issues.apache.org/jira/browse/INFRA-21276): `docker login -u <username>`.
+2. Generate and upload the new images: `./publish-to-dockerhub.sh`.
+
+For **publishing as an official image**, a new manifest should be generated and a pull request opened
 on the Docker Library [`official-images`](https://github.com/docker-library/official-images) repo.
 
 1. Run `./generate-stackbrew-library.sh` to output the new manifest (see note [below](
