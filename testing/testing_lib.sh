@@ -249,8 +249,8 @@ function test_docker_entrypoint() {
 
     originalLdPreloadSetting=$LD_PRELOAD
 
-    ./docker-entrypoint.sh $(pwd)/testing/bin/docker-entrypoint.sh hello world "$originalLdPreloadSetting" false
-    DISABLE_JEMALLOC=true ./docker-entrypoint.sh $(pwd)/testing/bin/docker-entrypoint.sh hello world "$originalLdPreloadSetting" true
+    ./docker-entrypoint.sh hello world "$originalLdPreloadSetting" false
+    DISABLE_JEMALLOC=true ./docker-entrypoint.sh hello world "$originalLdPreloadSetting" true
 }
 
 # vim: ts=4 sw=4 et
