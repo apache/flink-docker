@@ -84,7 +84,6 @@ set_common_options() {
 
 prepare_job_manager_start() {
     echo "Starting Job Manager"
-    copy_plugins_if_required
 
     set_common_options
 
@@ -101,6 +100,8 @@ maybe_enable_jemalloc() {
 }
 
 maybe_enable_jemalloc
+
+copy_plugins_if_required
 
 args=("$@")
 if [ "$1" = "help" ]; then
@@ -124,7 +125,6 @@ elif [ "$1" = ${COMMAND_HISTORY_SERVER} ]; then
     args=("${args[@]:1}")
 
     echo "Starting History Server"
-    copy_plugins_if_required
 
     if [ -n "${FLINK_PROPERTIES}" ]; then
         echo "${FLINK_PROPERTIES}" >> "${CONF_FILE}"
@@ -136,7 +136,6 @@ elif [ "$1" = "taskmanager" ]; then
     args=("${args[@]:1}")
 
     echo "Starting Task Manager"
-    copy_plugins_if_required
 
     TASK_MANAGER_NUMBER_OF_TASK_SLOTS=${TASK_MANAGER_NUMBER_OF_TASK_SLOTS:-$(grep -c ^processor /proc/cpuinfo)}
 
@@ -152,8 +151,6 @@ elif [ "$1" = "taskmanager" ]; then
 elif [ "$1" = "$COMMAND_NATIVE_KUBERNETES" ]; then
     args=("${args[@]:1}")
 
-    copy_plugins_if_required
-
     export _FLINK_HOME_DETERMINED=true
     . $FLINK_HOME/bin/config.sh
     export FLINK_CLASSPATH="`constructFlinkClassPath`:$INTERNAL_HADOOP_CLASSPATHS"
@@ -163,8 +160,6 @@ elif [ "$1" = "$COMMAND_NATIVE_KUBERNETES" ]; then
 fi
 
 args=("${args[@]}")
-
-copy_plugins_if_required
 
 # Set the Flink related environments
 export _FLINK_HOME_DETERMINED=true
