@@ -13,6 +13,8 @@ BRANCH="$TRAVIS_BRANCH"
 
 ./add-version.sh -r 1.12 -f 1.12.1
 
+test_docker_entrypoint
+
 smoke_test_all_images
 smoke_test_one_image_non_root
 

@@ -244,4 +244,13 @@ function smoke_test_one_image_non_root() {
     internal_smoke_test_images "$dockerfiles" "--user flink"
 }
 
+function test_docker_entrypoint() {
+    export FLINK_HOME=$(pwd)/testing
+
+    originalLdPreloadSetting=$LD_PRELOAD
+
+    ./docker-entrypoint.sh $(pwd)/testing/bin/docker-entrypoint.sh hello world "$originalLdPreloadSetting" false
+    DISABLE_JEMALLOC=true ./docker-entrypoint.sh $(pwd)/testing/bin/docker-entrypoint.sh hello world "$originalLdPreloadSetting" true
+}
+
 # vim: ts=4 sw=4 et
