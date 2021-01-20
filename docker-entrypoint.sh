@@ -95,7 +95,7 @@ prepare_job_manager_start() {
 }
 
 maybe_enable_jemalloc() {
-    if ! [ "${DISABLE_JEMALLOC:-false}" == "true" ]; then
+    if [ "${DISABLE_JEMALLOC:-false}" == "false" ]; then
         export LD_PRELOAD=$LD_PRELOAD:/usr/lib/x86_64-linux-gnu/libjemalloc.so
     fi
 }

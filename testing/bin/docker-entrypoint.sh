@@ -27,7 +27,7 @@ originalLdPreloadSetting=$3
 jemallocDisabled=$4
 
 if [ "$jemallocDisabled" == "true" ] && ! [ "$originalLdPreloadSetting" == "$LD_PRELOAD" ]; then
-    echo "jemalloc was not disabled; exploed LD_PRELOAD to be '$originalLdPreloadSetting' but was '$LD_PRELOAD'"
+    echo "jemalloc was not disabled; expected LD_PRELOAD to be '$originalLdPreloadSetting' but was '$LD_PRELOAD'"
     exit 1
 fi
 
