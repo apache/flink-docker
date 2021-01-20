@@ -76,16 +76,13 @@ set_config_option() {
   fi
 }
 
-set_common_options() {
+prepare_configuration() {
     set_config_option jobmanager.rpc.address ${JOB_MANAGER_RPC_ADDRESS}
     set_config_option blob.server.port 6124
     set_config_option query.server.port 6125
-}
 
-prepare_job_manager_start() {
-    echo "Starting Job Manager"
-
-    set_common_options
+    TASK_MANAGER_NUMBER_OF_TASK_SLOTS=${TASK_MANAGER_NUMBER_OF_TASK_SLOTS:-1}
+    set_config_option taskmanager.numberOfTaskSlots ${TASK_MANAGER_NUMBER_OF_TASK_SLOTS}
 
     if [ -n "${FLINK_PROPERTIES}" ]; then
         echo "${FLINK_PROPERTIES}" >> "${CONF_FILE}"
@@ -103,6 +100,8 @@ maybe_enable_jemalloc
 
 copy_plugins_if_required
 
+prepare_configuration
+
 args=("$@")
 if [ "$1" = "help" ]; then
     printf "Usage: $(basename "$0") (jobmanager|${COMMAND_STANDALONE}|taskmanager|${COMMAND_HISTORY_SERVER})\n"
@@ -112,13 +111,13 @@ if [ "$1" = "help" ]; then
 elif [ "$1" = "jobmanager" ]; then
     args=("${args[@]:1}")
 
-    prepare_job_manager_start
+    echo "Starting Job Manager"
 
     exec $(drop_privs_cmd) "$FLINK_HOME/bin/jobmanager.sh" start-foreground "${args[@]}"
 elif [ "$1" = ${COMMAND_STANDALONE} ]; then
     args=("${args[@]:1}")
 
-    prepare_job_manager_start
+    echo "Starting Job Manager"
 
     exec $(drop_privs_cmd) "$FLINK_HOME/bin/standalone-job.sh" start-foreground "${args[@]}"
 elif [ "$1" = ${COMMAND_HISTORY_SERVER} ]; then
@@ -126,26 +125,11 @@ elif [ "$1" = ${COMMAND_HISTORY_SERVER} ]; then
 
     echo "Starting History Server"
 
-    if [ -n "${FLINK_PROPERTIES}" ]; then
-        echo "${FLINK_PROPERTIES}" >> "${CONF_FILE}"
-    fi
-    envsubst < "${CONF_FILE}" > "${CONF_FILE}.tmp" && mv "${CONF_FILE}.tmp" "${CONF_FILE}"
-
     exec $(drop_privs_cmd) "$FLINK_HOME/bin/historyserver.sh" start-foreground "${args[@]}"
 elif [ "$1" = "taskmanager" ]; then
     args=("${args[@]:1}")
 
     echo "Starting Task Manager"
-
-    TASK_MANAGER_NUMBER_OF_TASK_SLOTS=${TASK_MANAGER_NUMBER_OF_TASK_SLOTS:-1}
-
-    set_common_options
-    set_config_option taskmanager.numberOfTaskSlots ${TASK_MANAGER_NUMBER_OF_TASK_SLOTS}
-
-    if [ -n "${FLINK_PROPERTIES}" ]; then
-        echo "${FLINK_PROPERTIES}" >> "${CONF_FILE}"
-    fi
-    envsubst < "${CONF_FILE}" > "${CONF_FILE}.tmp" && mv "${CONF_FILE}.tmp" "${CONF_FILE}"
 
     exec $(drop_privs_cmd) "$FLINK_HOME/bin/taskmanager.sh" start-foreground "${args[@]}"
 elif [ "$1" = "$COMMAND_NATIVE_KUBERNETES" ]; then
