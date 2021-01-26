@@ -89,7 +89,7 @@ elif [ "$flink_version" = "1.10.0" ]; then
 elif [ "$flink_version" = "1.11.0" ]; then
     gpg_key="2DA85B93244FDFA19A6244500653C0A2CEA00D0E"
 elif [ "$flink_version" = "1.12.0" ]; then
-    gpg_key="D9839159"
+    gpg_key="43CE299BC305AFF8B912AA95183F6944D9839159"
 elif [ "$flink_version" = "1.12.1" ]; then
     gpg_key="F8E419AA0B60C28879E876859DFF40967ABFC5A4"
 else
