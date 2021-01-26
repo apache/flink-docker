@@ -112,9 +112,9 @@ for source_variant in "${SOURCE_VARIANTS[@]}"; do
 
             flink_url_file_path=flink/flink-${flink_version}/flink-${flink_version}-bin-scala_${scala_version}.tgz
 
-            flink_tgz_url="https://www.apache.org/dyn/closer.cgi?action=download&filename=${flink_url_file_path}"
+            flink_tgz_url="https://archive.apache.org/dist/${flink_url_file_path}"
             # Not all mirrors have the .asc files
-            flink_asc_url=https://www.apache.org/dist/${flink_url_file_path}.asc
+            flink_asc_url="https://archive.apache.org/dist/${flink_url_file_path}.asc"
 
             mkdir "$dir"
             generateDockerfile "${dir}" "${flink_tgz_url}" "${flink_asc_url}" ${gpg_key} true ${java_version} ${source_variant}
