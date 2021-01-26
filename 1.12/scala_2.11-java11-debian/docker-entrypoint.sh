@@ -22,7 +22,6 @@ COMMAND_STANDALONE="standalone-job"
 # Deprecated, should be remove in Flink release 1.13
 COMMAND_NATIVE_KUBERNETES="native-k8s"
 COMMAND_HISTORY_SERVER="history-server"
-COMMAND_DISABLE_JEMALLOC="disable-jemalloc"
 
 # If unspecified, the hostname of the container is taken as the JobManager address
 JOB_MANAGER_RPC_ADDRESS=${JOB_MANAGER_RPC_ADDRESS:-$(hostname -f)}
@@ -77,91 +76,64 @@ set_config_option() {
   fi
 }
 
-set_common_options() {
+prepare_configuration() {
     set_config_option jobmanager.rpc.address ${JOB_MANAGER_RPC_ADDRESS}
     set_config_option blob.server.port 6124
     set_config_option query.server.port 6125
-}
 
-prepare_job_manager_start() {
-    echo "Starting Job Manager"
-    copy_plugins_if_required
-
-    set_common_options
-
-    if [ -n "${FLINK_PROPERTIES}" ]; then
-        echo "${FLINK_PROPERTIES}" >> "${CONF_FILE}"
-    fi
-    envsubst < "${CONF_FILE}" > "${CONF_FILE}.tmp" && mv "${CONF_FILE}.tmp" "${CONF_FILE}"
-}
-
-disable_jemalloc_env() {
-  # use nameref '_args' to update the passed 'args' within function
-  local -n _args=$1
-  if [ "${_args[0]}" = ${COMMAND_DISABLE_JEMALLOC} ]; then
-      echo "Disable Jemalloc as the memory allocator"
-      _args=("${_args[@]:1}")
-  else
-      export LD_PRELOAD=$LD_PRELOAD:/usr/lib/x86_64-linux-gnu/libjemalloc.so
-  fi
-}
-
-args=("$@")
-if [ "$1" = "help" ]; then
-    printf "Usage: $(basename "$0") (jobmanager|${COMMAND_STANDALONE}|taskmanager|${COMMAND_HISTORY_SERVER}) [${COMMAND_DISABLE_JEMALLOC}]\n"
-    printf "    Or $(basename "$0") help\n\n"
-    printf "By default, Flink image adopts jemalloc as default memory allocator and will disable jemalloc if option '${COMMAND_DISABLE_JEMALLOC}' given.\n"
-    exit 0
-elif [ "$1" = "jobmanager" ]; then
-    args=("${args[@]:1}")
-    disable_jemalloc_env args
-
-    prepare_job_manager_start
-
-    exec $(drop_privs_cmd) "$FLINK_HOME/bin/jobmanager.sh" start-foreground "${args[@]}"
-elif [ "$1" = ${COMMAND_STANDALONE} ]; then
-    args=("${args[@]:1}")
-    disable_jemalloc_env args
-
-    prepare_job_manager_start
-
-    exec $(drop_privs_cmd) "$FLINK_HOME/bin/standalone-job.sh" start-foreground "${args[@]}"
-elif [ "$1" = ${COMMAND_HISTORY_SERVER} ]; then
-    args=("${args[@]:1}")
-    disable_jemalloc_env args
-
-    echo "Starting History Server"
-    copy_plugins_if_required
-
-    if [ -n "${FLINK_PROPERTIES}" ]; then
-        echo "${FLINK_PROPERTIES}" >> "${CONF_FILE}"
-    fi
-    envsubst < "${CONF_FILE}" > "${CONF_FILE}.tmp" && mv "${CONF_FILE}.tmp" "${CONF_FILE}"
-
-    exec $(drop_privs_cmd) "$FLINK_HOME/bin/historyserver.sh" start-foreground "${args[@]}"
-elif [ "$1" = "taskmanager" ]; then
-    args=("${args[@]:1}")
-    disable_jemalloc_env args
-
-    echo "Starting Task Manager"
-    copy_plugins_if_required
-
-    TASK_MANAGER_NUMBER_OF_TASK_SLOTS=${TASK_MANAGER_NUMBER_OF_TASK_SLOTS:-$(grep -c ^processor /proc/cpuinfo)}
-
-    set_common_options
+    TASK_MANAGER_NUMBER_OF_TASK_SLOTS=${TASK_MANAGER_NUMBER_OF_TASK_SLOTS:-1}
     set_config_option taskmanager.numberOfTaskSlots ${TASK_MANAGER_NUMBER_OF_TASK_SLOTS}
 
     if [ -n "${FLINK_PROPERTIES}" ]; then
         echo "${FLINK_PROPERTIES}" >> "${CONF_FILE}"
     fi
     envsubst < "${CONF_FILE}" > "${CONF_FILE}.tmp" && mv "${CONF_FILE}.tmp" "${CONF_FILE}"
+}
+
+maybe_enable_jemalloc() {
+    if [ "${DISABLE_JEMALLOC:-false}" == "false" ]; then
+        export LD_PRELOAD=$LD_PRELOAD:/usr/lib/x86_64-linux-gnu/libjemalloc.so
+    fi
+}
+
+maybe_enable_jemalloc
+
+copy_plugins_if_required
+
+prepare_configuration
+
+args=("$@")
+if [ "$1" = "help" ]; then
+    printf "Usage: $(basename "$0") (jobmanager|${COMMAND_STANDALONE}|taskmanager|${COMMAND_HISTORY_SERVER})\n"
+    printf "    Or $(basename "$0") help\n\n"
+    printf "By default, Flink image adopts jemalloc as default memory allocator. This behavior can be disabled by setting the 'DISABLE_JEMALLOC' environment variable to 'true'.\n"
+    exit 0
+elif [ "$1" = "jobmanager" ]; then
+    args=("${args[@]:1}")
+
+    echo "Starting Job Manager"
+
+    exec $(drop_privs_cmd) "$FLINK_HOME/bin/jobmanager.sh" start-foreground "${args[@]}"
+elif [ "$1" = ${COMMAND_STANDALONE} ]; then
+    args=("${args[@]:1}")
+
+    echo "Starting Job Manager"
+
+    exec $(drop_privs_cmd) "$FLINK_HOME/bin/standalone-job.sh" start-foreground "${args[@]}"
+elif [ "$1" = ${COMMAND_HISTORY_SERVER} ]; then
+    args=("${args[@]:1}")
+
+    echo "Starting History Server"
+
+    exec $(drop_privs_cmd) "$FLINK_HOME/bin/historyserver.sh" start-foreground "${args[@]}"
+elif [ "$1" = "taskmanager" ]; then
+    args=("${args[@]:1}")
+
+    echo "Starting Task Manager"
 
     exec $(drop_privs_cmd) "$FLINK_HOME/bin/taskmanager.sh" start-foreground "${args[@]}"
 elif [ "$1" = "$COMMAND_NATIVE_KUBERNETES" ]; then
     args=("${args[@]:1}")
-    disable_jemalloc_env args
-
-    copy_plugins_if_required
 
     export _FLINK_HOME_DETERMINED=true
     . $FLINK_HOME/bin/config.sh
@@ -172,10 +144,6 @@ elif [ "$1" = "$COMMAND_NATIVE_KUBERNETES" ]; then
 fi
 
 args=("${args[@]}")
-
-disable_jemalloc_env args
-
-copy_plugins_if_required
 
 # Set the Flink related environments
 export _FLINK_HOME_DETERMINED=true
