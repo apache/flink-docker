@@ -11,7 +11,7 @@ fi
 
 BRANCH="$TRAVIS_BRANCH"
 
-./add-version.sh -r 1.10 -f 1.10.2
+./add-version.sh -r 1.10 -f 1.10.3
 
 smoke_test_all_images
 smoke_test_one_image_non_root
