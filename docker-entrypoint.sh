@@ -134,10 +134,5 @@ fi
 
 args=("${args[@]}")
 
-# Set the Flink related environments
-export _FLINK_HOME_DETERMINED=true
-. $FLINK_HOME/bin/config.sh
-export FLINK_CLASSPATH="`constructFlinkClassPath`:$INTERNAL_HADOOP_CLASSPATHS"
-
 # Running command in pass-through mode
 exec $(drop_privs_cmd) "${args[@]}"
