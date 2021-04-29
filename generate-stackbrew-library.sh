@@ -39,7 +39,7 @@ GitRepo: https://github.com/apache/flink-docker.git
 EOH
 
 
-for dockerfile in $(find . -name "Dockerfile"); do
+for dockerfile in $(find . -name "Dockerfile" | sort -r); do
     dir=$(dirname $dockerfile)
 
     commit="$(dirCommit "$dir")"
