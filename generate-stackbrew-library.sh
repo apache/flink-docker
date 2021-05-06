@@ -33,8 +33,7 @@ source common.sh
 cat <<-EOH
 # this file is generated via https://github.com/apache/flink-docker/blob/$(fileCommit "$self")/$self
 
-Maintainers: Patrick Lucas <me@patricklucas.com> (@patricklucas),
-             Ismaël Mejía <iemejia@gmail.com> (@iemejia)
+Maintainers: The Apache Flink Project <dev@flink.apache.org> (@ApacheFlink)
 GitRepo: https://github.com/apache/flink-docker.git
 EOH
 
