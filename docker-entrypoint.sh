@@ -79,8 +79,9 @@ prepare_configuration() {
     set_config_option blob.server.port 6124
     set_config_option query.server.port 6125
 
-    TASK_MANAGER_NUMBER_OF_TASK_SLOTS=${TASK_MANAGER_NUMBER_OF_TASK_SLOTS:-1}
-    set_config_option taskmanager.numberOfTaskSlots ${TASK_MANAGER_NUMBER_OF_TASK_SLOTS}
+    if [ -n "${TASK_MANAGER_NUMBER_OF_TASK_SLOTS}" ]; then
+        set_config_option taskmanager.numberOfTaskSlots ${TASK_MANAGER_NUMBER_OF_TASK_SLOTS}
+    fi
 
     if [ -n "${FLINK_PROPERTIES}" ]; then
         echo "${FLINK_PROPERTIES}" >> "${CONF_FILE}"
