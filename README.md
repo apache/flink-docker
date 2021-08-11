@@ -88,7 +88,7 @@ Once the pull request has been merged, we can release the new docker images:
 For **publishing to DockerHub: apache/flink** , you need to perform the following steps:
 
 1. Make sure that you are authenticated with your Docker ID, and that your Docker ID has access to `apache/flink`. If not, request access by INFRA (see [also](https://issues.apache.org/jira/browse/INFRA-21276): `docker login -u <username>`.
-2. Generate and upload the new images: `./publish-to-dockerhub.sh`.
+2. Generate and upload the new images: `./publish-to-dockerhub.sh`. (Do not execute on the arm platform machine, such as Apple Silicon)
 
 For **publishing as an official image**, a new manifest should be generated and a pull request opened
 on the Docker Library [`official-images`](https://github.com/docker-library/official-images) repo.
