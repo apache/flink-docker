@@ -12,7 +12,7 @@ function usage() {
 
 binary_download_url=
 name=custom
-java_version=8
+java_version=11
 
 while getopts u:n:j:h arg; do
   case "$arg" in
