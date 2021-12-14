@@ -3,7 +3,7 @@
 export SOURCE_VARIANTS=(debian )
 
 export DEFAULT_SCALA="2.12"
-export DEFAULT_JAVA="8"
+export DEFAULT_JAVA="11"
 
 function generateDockerfile {
     # define variables

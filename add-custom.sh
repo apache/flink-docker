@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash -eu
 
 # Use this script to build the Dockerfiles against an arbitrary
 # Flink distribution.
@@ -12,7 +12,7 @@ function usage() {
 
 binary_download_url=
 name=custom
-java_version=8
+java_version=${DEFAULT_JAVA}
 
 while getopts u:n:j:h arg; do
   case "$arg" in

@@ -13,7 +13,7 @@ BRANCH="$TRAVIS_BRANCH"
 
 test_docker_entrypoint
 
-./add-custom.sh -u "https://s3.amazonaws.com/flink-nightly/flink-1.15-SNAPSHOT-bin-scala_2.11.tgz" -n test-java8
+./add-custom.sh -u "https://s3.amazonaws.com/flink-nightly/flink-1.15-SNAPSHOT-bin-scala_2.11.tgz" -j 8 -n test-java8
 
 # test Flink with Java11 image as well
 ./add-custom.sh -u "https://s3.amazonaws.com/flink-nightly/flink-1.15-SNAPSHOT-bin-scala_2.11.tgz" -j 11 -n test-java11
