@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash -eu
 
 # Use this script to build the Dockerfiles against an arbitrary
 # Flink distribution.
