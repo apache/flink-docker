@@ -11,7 +11,7 @@ fi
 
 BRANCH="$TRAVIS_BRANCH"
 
-./add-version.sh -r 1.14 -f 1.14.0
+./add-version.sh -r 1.14 -f 1.14.2
 
 test_docker_entrypoint
 
