@@ -85,6 +85,5 @@ function generateReleaseMetadata {
 
     echo "Tags: $tags" >> $dir/release.metadata
 
-    # We currently only support amd64 with Flink.
-    echo "Architectures: amd64" >> $dir/release.metadata
+    echo "Architectures: amd64,arm64v8" >> $dir/release.metadata
 }
