@@ -80,6 +80,10 @@ RUN set -ex; \
   \
   chown -R flink:flink .;
 
+# Replace default REST endpoint bind address to use the container's network interface
+RUN sed -i 's/rest.address: localhost/rest.address: 0.0.0.0/g' $FLINK_HOME/conf/flink-conf.yaml
+RUN sed -i 's/rest.bind-address: localhost/rest.bind-address: 0.0.0.0/g' $FLINK_HOME/conf/flink-conf.yaml
+
 # Configure container
 COPY docker-entrypoint.sh /
 ENTRYPOINT ["/docker-entrypoint.sh"]
