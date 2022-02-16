@@ -103,7 +103,7 @@ on the Docker Library [`official-images`](https://github.com/docker-library/offi
 
 A pull request can then be opened on the [`official-images`](
 https://github.com/docker-library/official-images) repo with the new manifest. <sup>\[[example](
-https://github.com/docker-library/official-images/pull/7378)]</sup>
+https://github.com/docker-library/official-images/pull/10665)]</sup>
 
 Once the pull request has been merged (often within 1 business day), the new images will be
 available shortly thereafter.
