@@ -58,7 +58,7 @@ if [[ ! "$flink_version" =~ ^$flink_release\.+ ]]; then
 fi
 
 # Defaults, can vary between versions
-scala_versions=( 2.11 2.12 )
+scala_versions=( 2.12 )
 java_versions=( 8 11 )
 gpg_key=
 
