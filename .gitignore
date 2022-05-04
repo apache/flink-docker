@@ -3,3 +3,4 @@
 dev
 *.iml
 testing/docker-test-job/target
+.vscode
