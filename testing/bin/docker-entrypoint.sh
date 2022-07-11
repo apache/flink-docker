@@ -27,11 +27,19 @@ originalLdPreloadSetting=$3
 jemallocDisabled=$4
 
 if [ "$jemallocDisabled" == "true" ] && ! [ "$originalLdPreloadSetting" == "$LD_PRELOAD" ]; then
-    echo "jemalloc was not disabled; expected LD_PRELOAD to be '$originalLdPreloadSetting' but was '$LD_PRELOAD'"
+    echo "jemalloc was disabled; expected LD_PRELOAD to be '$originalLdPreloadSetting' but was '$LD_PRELOAD'"
     exit 1
 fi
 
+# We expect jemalloc to be available in any of these paths
+JEMALLOC_PATH="/usr/lib/$(uname -m)-linux-gnu/libjemalloc.so"
+JEMALLOC_FALLBACK="/usr/lib/x86_64-linux-gnu/libjemalloc.so"
+
 if [ "$jemallocDisabled" == "false" ] && [ "$originalLdPreloadSetting" == "$LD_PRELOAD" ]; then
-    echo "jemalloc was disabled; expected LD_PRELOAD to be different than '$originalLdPreloadSetting'."
+    if [ ! -f "$JEMALLOC_PATH" ] && [ ! -f "$JEMALLOC_FALLBACK" ]; then
+      echo "jemalloc was enabled but it was not found in the system. LD_PRELOAD is unchanged and glibc will be used instead."
+      exit 0
+    fi
+    echo "jemalloc was enabled; expected LD_PRELOAD to be different than '$originalLdPreloadSetting'."
     exit 1
 fi
