@@ -69,6 +69,7 @@ Updating the Dockerfiles involves the following steps:
 1. Generate the Dockerfiles
     * Checkout the `dev-x.y`(minor release)/`dev-master`(major release) branch of the respective release, e.g., dev-1.9
     * Update `add-version.sh` with the GPG key ID of the key used to sign the new release
+        * Be sure to use the full fingerprint of the GPG key (as shown in the example below), as the official images require this.
         * Commit this change with message `Add GPG key for x.y.z release` <sup>\[[example](
             https://github.com/apache/flink-docker/commit/94845f46c0f0f2de80d4a5ce309db49aff4655d0)]</sup>
     * (minor only) Update `testing/run_travis_tests.sh` to test against the new minor version.
