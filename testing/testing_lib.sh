@@ -235,13 +235,10 @@ function smoke_test_one_image() {
     internal_smoke_test_images "$(ls ./*/*/Dockerfile | tail -n 1)" ""
 }
 
-# Similar to smoke_test_one_image, but test one debian image and one alpine image running as a
-# non-root user.
+# Similar to smoke_test_one_image, but test as a non-root user.
 function smoke_test_one_image_non_root() {
     echo >&2 "==> Test images running as non-root"
-    local dockerfiles="$dockerfiles $(ls ./*/*-debian/Dockerfile | tail -n 1)"
-    dockerfiles="$dockerfiles $(ls ./*/*-alpine/Dockerfile | tail -n 1)"
-    internal_smoke_test_images "$dockerfiles" "--user flink"
+    internal_smoke_test_images "$(ls ./*/*/Dockerfile | tail -n 1)" "--user flink"
 }
 
 function test_docker_entrypoint() {

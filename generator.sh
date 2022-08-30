@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-export SOURCE_VARIANTS=(debian )
+export SOURCE_VARIANTS=(ubuntu )
 
 export DEFAULT_SCALA="2.12"
 export DEFAULT_JAVA="11"
@@ -15,7 +15,7 @@ function generateDockerfile {
     java_version=$6
     source_variant=$7
 
-    from_docker_image="openjdk:${java_version}-jre"
+    from_docker_image="eclipse-temurin:${java_version}-jre-jammy"
 
     cp docker-entrypoint.sh "$dir/docker-entrypoint.sh"
 
