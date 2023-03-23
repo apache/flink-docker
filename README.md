@@ -34,6 +34,14 @@ Development happens on the various `dev-X` branches.
 Pull requests for a specific version should be opened against the respective `dev-<version>` branch.
 Pull requests for all versions, or for the next major Flink release, should be opened against the `dev-master` branch.
 
+For new major Flink releases, once the release branch is created in the [apache/flink](https://github.com/apache/flink/) repo, the corresponding `dev-x.y` 
+branch must be created in `apache/flink-docker`:
+1. Create the branch based on `dev-master`
+2. Update `.github/workflows/ci.yml` in the corresponding `dev-*` branches: Make sure that the correct 
+   snapshot version is stated; for `dev-x.y` it should point to `x.y-SNAPSHOT`, while for `dev-master` 
+   it should point to the most recent snapshot version (i.e. `x.(y+1)-SNAPSHOT`).
+3. Update `.github/workflows/snapshot.yml` in `master` mapping each (supported) version to the right branch.
+
 ### CI
 
 The `dev-master` branch is tested against nightly Flink snapshots for the next major Flink version. This allows us to
@@ -51,9 +59,6 @@ There are additional steps required when a new Flink major version (x.y.0) is re
 
 * Since only the current and previous major versions of Flink are supported, the Dockerfiles for
   older versions must be removed when adding the new version to this repo
-* The new images should be given the `latest` tag, so the `aliases` array in
-  `generate-stackbrew-library.sh` must be updated
-
 
 ### Release workflow
 
@@ -72,8 +77,7 @@ Updating the Dockerfiles involves the following steps:
         * Be sure to use the full fingerprint of the GPG key (as shown in the example below), as the official images require this.
         * Commit this change with message `Add GPG key for x.y.z release` <sup>\[[example](
             https://github.com/apache/flink-docker/commit/94845f46c0f0f2de80d4a5ce309db49aff4655d0)]</sup>
-    * (minor only) Update `testing/run_travis_tests.sh` to test against the new minor version.
-    * Create a pull request against the `dev-x.y`/`dev-master` branch containing these commits.
+    * Create a pull request against the `dev-x.y`/`dev-master` branch containing this commit.
     * Run `add-version.sh` with the appropriate arguments (`-r flink-major-version -f flink-full-version`)
         * e.g. `./add-version.sh -r 1.2 -f 1.2.1`
 2. Update Dockerfiles on the the `master` branch
@@ -111,18 +115,14 @@ https://github.com/docker-library/official-images/pull/10665)]</sup>
 Once the pull request has been merged (often within 1 business day), the new images will be
 available shortly thereafter.
 
-For new major Flink releases, once the new image is available, the `dev-x.y` branch must be created:
-1. Create the branch based on `dev-master`
-2. update `testing/run_travis_tests.sh`:
-    * replace usage of `./add-custom.sh` with `./add-version.sh -r x.y -f x.y.0`
-    * replace references to `dev-master` with `dev-x.y`
-
 ### Release checklist
 
 Checklist for the `dev` branch:
 - [ ] The GPG key ID of the key used to sign the release has been added to `add-version.sh` and
       committed with the message `Add GPG key for x.y.z release`
 - [ ] `./add-version.sh -r x.y -f x.y.z` has been run on the respective dev branch
+- [ ] `.github/workflows/snapshot.yml` in `master` has each supported version being mapped to the right branch. 
+      Deprecated versions should have been removed.
 
 Checklist for the `master` branch:
 - [ ] _(new major releases only)_ any unsupported Flink major version Dockerfiles have been removed
@@ -130,8 +130,6 @@ Checklist for the `master` branch:
 - [ ] _(new minor releases only)_ any existing generated files for the same major version have been
       removed
 - [ ] The updated Dockerfiles have been committed with the message `Update Dockerfiles for x.y.z release`
-- [ ] _(new major releases only)_ the `aliases` array in `generate-stackbrew-library.sh` has been
-      updated with `[x.y]='latest'` and committed with the message `Update latest image tag to x.y`
 - [ ] A pull request with the above changes has been opened on this repo and merged
 - [ ] The new library manifest has been generated with `generate-stackbrew-library.sh` and a pull
       request opened on the `official-images` repo with commit message `Update to Flink x.y.z`
