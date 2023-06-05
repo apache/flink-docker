@@ -16,9 +16,9 @@ function generateDockerfile {
     source_variant=$7
 
     flink_url_file_path=flink/flink-${flink_version}/flink-${flink_version}-bin-scala_${scala_version}.tgz
-    flink_tgz_url="https://www.apache.org/dyn/closer.cgi?action=download&filename=${flink_url_file_path}"
+    binary_download_url="https://www.apache.org/dyn/closer.cgi?action=download&filename=${flink_url_file_path}"
     # Not all mirrors have the .asc files
-    flink_asc_url=https://www.apache.org/dist/${flink_url_file_path}.asc
+    asc_download_url=https://www.apache.org/dist/${flink_url_file_path}.asc
 
     from_docker_image="eclipse-temurin:${java_version}-jre-jammy"
 
