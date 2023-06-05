@@ -127,7 +127,7 @@ for source_variant in "${SOURCE_VARIANTS[@]}"; do
             flink_asc_url=https://www.apache.org/dist/${flink_url_file_path}.asc
 
             mkdir "$dir"
-            generateDockerfile "${dir}" "${flink_tgz_url}" "${flink_asc_url}" ${gpg_key} true ${java_version} ${source_variant}
+            generateDockerfile "${dir}" "${flink_release}" "${flink_version}" ${gpg_key} true ${java_version} ${source_variant}
             generateReleaseMetadata "${dir}" ${flink_release} ${flink_version} ${scala_version} ${java_version} ${source_variant}
         done
     done

@@ -44,7 +44,9 @@ RUN set -ex; \
   gosu nobody true
 
 # Configure Flink version
-ENV FLINK_TGZ_URL=%%BINARY_DOWNLOAD_URL%% \
+ENV FLINK_RELEASE=%%FLINK_RELEASE%% \
+    FLINK_VERSION=%%FLINK_VERSION%% \
+    FLINK_TGZ_URL=%%BINARY_DOWNLOAD_URL%% \
     FLINK_ASC_URL=%%ASC_DOWNLOAD_URL%% \
     GPG_KEY=%%GPG_KEY%% \
     CHECK_GPG=%%CHECK_GPG%%
@@ -85,7 +87,18 @@ RUN set -ex; \
   sed -i 's/rest.bind-address: localhost/rest.bind-address: 0.0.0.0/g' $FLINK_HOME/conf/flink-conf.yaml; \
   sed -i 's/jobmanager.bind-host: localhost/jobmanager.bind-host: 0.0.0.0/g' $FLINK_HOME/conf/flink-conf.yaml; \
   sed -i 's/taskmanager.bind-host: localhost/taskmanager.bind-host: 0.0.0.0/g' $FLINK_HOME/conf/flink-conf.yaml; \
-  sed -i '/taskmanager.host: localhost/d' $FLINK_HOME/conf/flink-conf.yaml;
+  sed -i '/taskmanager.host: localhost/d' $FLINK_HOME/conf/flink-conf.yaml; \
+  \
+  # if FLINK_RELEASE != FLINK_VERSION \
+  # Symlink FLINK_RELEASE (e.g. 1.16) jars to FLINK_VERSION (e.g. 1.16.2) jars \
+  # e.g. flink-s3-fs-presto-1.16.jar -> flink-s3-fs-presto-1.16.2.jar \
+  if [ "$FLINK_RELEASE" != "$FLINK_VERSION" ]; then \
+    for f in `find . -name *$FLINK_VERSION.jar` \
+    do \
+      jar=`basename $f`
+      ln -s $jar ${f/$FLINK_VERSION/$FLINK_RELEASE}
+    done \
+  fi
 
 # Configure container
 COPY docker-entrypoint.sh /

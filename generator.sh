@@ -8,12 +8,17 @@ export DEFAULT_JAVA="11"
 function generateDockerfile {
     # define variables
     dir=$1
-    binary_download_url=$2
-    asc_download_url=$3
+    flink_release=$2
+    flink_version=$3
     gpg_key=$4
     check_gpg=$5
     java_version=$6
     source_variant=$7
+
+    flink_url_file_path=flink/flink-${flink_version}/flink-${flink_version}-bin-scala_${scala_version}.tgz
+    flink_tgz_url="https://www.apache.org/dyn/closer.cgi?action=download&filename=${flink_url_file_path}"
+    # Not all mirrors have the .asc files
+    flink_asc_url=https://www.apache.org/dist/${flink_url_file_path}.asc
 
     from_docker_image="eclipse-temurin:${java_version}-jre-jammy"
 
@@ -24,6 +29,9 @@ function generateDockerfile {
 
     # generate Dockerfile
     sed \
+        -e "s,%%FLINK_RELEASE%%,${flink_release}," \
+        -e "s,%%FLINK_VERSION%%,${flink_version}," \
+        -e "s,%%BINARY_DOWNLOAD_URL%%,${escaped_binary_download_url}," \
         -e "s,%%BINARY_DOWNLOAD_URL%%,${escaped_binary_download_url}," \
         -e "s,%%ASC_DOWNLOAD_URL%%,$asc_download_url," \
         -e "s/%%GPG_KEY%%/$gpg_key/" \
