@@ -121,7 +121,7 @@ for source_variant in "${SOURCE_VARIANTS[@]}"; do
             dir="$flink_release/scala_${scala_version}-java${java_version}-${source_variant}"
 
             mkdir "$dir"
-            generateDockerfile "${dir}" "${flink_release}" "${flink_version}" ${gpg_key} true ${java_version} ${source_variant}
+            generateDockerfile "${dir}" "${flink_release}" "${flink_version}" ${gpg_key} true ${java_version} ${scala_version} ${source_variant}
             generateReleaseMetadata "${dir}" ${flink_release} ${flink_version} ${scala_version} ${java_version} ${source_variant}
         done
     done

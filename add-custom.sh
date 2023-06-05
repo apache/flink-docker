@@ -48,6 +48,6 @@ for source_variant in "${SOURCE_VARIANTS[@]}"; do
   dir="dev/${name}-${source_variant}"
   rm -rf "${dir}"
   mkdir "$dir"
-  generateDockerfile "${dir}" "${binary_download_url}" "" "" false ${java_version} ${source_variant}
+  generateDockerfile "${dir}" ${flink_release} ${flink_version} "" false ${java_version} ${scala_version} ${source_variant}
 done
 echo >&2 " done."

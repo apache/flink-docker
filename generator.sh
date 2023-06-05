@@ -13,7 +13,8 @@ function generateDockerfile {
     gpg_key=$4
     check_gpg=$5
     java_version=$6
-    source_variant=$7
+    scala_version=$6
+    source_variant=$8
 
     flink_url_file_path=flink/flink-${flink_version}/flink-${flink_version}-bin-scala_${scala_version}.tgz
     binary_download_url="https://www.apache.org/dyn/closer.cgi?action=download&filename=${flink_url_file_path}"
