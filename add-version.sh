@@ -120,12 +120,6 @@ for source_variant in "${SOURCE_VARIANTS[@]}"; do
         for java_version in "${java_versions[@]}"; do
             dir="$flink_release/scala_${scala_version}-java${java_version}-${source_variant}"
 
-            flink_url_file_path=flink/flink-${flink_version}/flink-${flink_version}-bin-scala_${scala_version}.tgz
-
-            flink_tgz_url="https://www.apache.org/dyn/closer.cgi?action=download&filename=${flink_url_file_path}"
-            # Not all mirrors have the .asc files
-            flink_asc_url=https://www.apache.org/dist/${flink_url_file_path}.asc
-
             mkdir "$dir"
             generateDockerfile "${dir}" "${flink_release}" "${flink_version}" ${gpg_key} true ${java_version} ${source_variant}
             generateReleaseMetadata "${dir}" ${flink_release} ${flink_version} ${scala_version} ${java_version} ${source_variant}
