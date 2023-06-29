@@ -59,7 +59,7 @@ fi
 
 # Defaults, can vary between versions
 scala_versions=( 2.12 )
-java_versions=( 8 11 )
+java_versions=( 8 11 17 )
 gpg_key=
 
 # Version-specific variants (example)
