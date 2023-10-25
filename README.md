@@ -121,10 +121,10 @@ Checklist for the `dev` branch:
 - [ ] The GPG key ID of the key used to sign the release has been added to `add-version.sh` and
       committed with the message `Add GPG key for x.y.z release`
 - [ ] `./add-version.sh -r x.y -f x.y.z` has been run on the respective dev branch
-- [ ] `.github/workflows/snapshot.yml` in `master` has each supported version being mapped to the right branch. 
-      Deprecated versions should have been removed.
 
 Checklist for the `master` branch:
+- [ ] `.github/workflows/snapshot.yml` in `master` has each supported version being mapped to the right branch.
+  Deprecated versions should have been removed.
 - [ ] _(new major releases only)_ any unsupported Flink major version Dockerfiles have been removed
       (only two `x.y/` directories should be present)
 - [ ] _(new minor releases only)_ any existing generated files for the same major version have been
