@@ -38,14 +38,14 @@ jobs:
       matrix:
         java_version: [8, 11]
         build:
-          - flink_version: 1.18-SNAPSHOT
+          - flink_version: 1.19-SNAPSHOT
             branch: dev-master
+          - flink_version: 1.18-SNAPSHOT
+            branch: dev-1.18
           - flink_version: 1.17-SNAPSHOT
             branch: dev-1.17
           - flink_version: 1.16-SNAPSHOT
             branch: dev-1.16
-          - flink_version: 1.15-SNAPSHOT
-            branch: dev-1.15
     steps:
       - uses: actions/checkout@v3
         with:
