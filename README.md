@@ -145,10 +145,10 @@ of `library/flink` in the Docker [official-images](https://github.com/docker-lib
 ) repo via a pull request.
 
 Note: Since this script requires the `bashbrew` binary and a compatible version of Bash, the script
-`generate-stackbrew-library-docker.sh` can be used to invoke the script in a Docker container with
-the necessary dependencies.
+`generate-stackbrew-library-docker.sh` can be executed on developer's local machine and it will invoke 
+the script in a Docker container, which will be pulled from the internet automatically, with the necessary dependencies.
 
-Example:
+Example([official-images](https://github.com/docker-library/official-images) repo has been cloned locally):
 
     ./generate-stackbrew-library-docker.sh > /path/to/official-images/library/flink
 
