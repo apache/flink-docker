@@ -44,8 +44,8 @@ RUN set -ex; \
   gosu nobody true
 
 # Configure Flink version
-ENV FLINK_TGZ_URL=https://www.apache.org/dyn/closer.cgi?action=download&filename=flink/flink-1.18.0/flink-1.18.0-bin-scala_2.12.tgz \
-    FLINK_ASC_URL=https://www.apache.org/dist/flink/flink-1.18.0/flink-1.18.0-bin-scala_2.12.tgz.asc \
+ENV FLINK_TGZ_URL=https://www.apache.org/dyn/closer.cgi?action=download&filename=flink/flink-1.18.1/flink-1.18.1-bin-scala_2.12.tgz \
+    FLINK_ASC_URL=https://www.apache.org/dist/flink/flink-1.18.1/flink-1.18.1-bin-scala_2.12.tgz.asc \
     GPG_KEY=96AE0E32CBE6E0753CE6DF6CB078D1D3253A8D82 \
     CHECK_GPG=true
 
