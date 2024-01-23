@@ -81,11 +81,22 @@ RUN set -ex; \
   chown -R flink:flink .; \
   \
   # Replace default REST/RPC endpoint bind address to use the container's network interface \
-  sed -i 's/rest.address: localhost/rest.address: 0.0.0.0/g' $FLINK_HOME/conf/flink-conf.yaml; \
-  sed -i 's/rest.bind-address: localhost/rest.bind-address: 0.0.0.0/g' $FLINK_HOME/conf/flink-conf.yaml; \
-  sed -i 's/jobmanager.bind-host: localhost/jobmanager.bind-host: 0.0.0.0/g' $FLINK_HOME/conf/flink-conf.yaml; \
-  sed -i 's/taskmanager.bind-host: localhost/taskmanager.bind-host: 0.0.0.0/g' $FLINK_HOME/conf/flink-conf.yaml; \
-  sed -i '/taskmanager.host: localhost/d' $FLINK_HOME/conf/flink-conf.yaml;
+  CONF_FILE="$FLINK_HOME/conf/flink-conf.yaml"; \
+  if [ ! -e "$FLINK_HOME/conf/flink-conf.yaml" ]; then \
+    CONF_FILE="${FLINK_HOME}/conf/config.yaml"; \
+    /bin/bash "$FLINK_HOME/bin/config-parser-utils.sh" "${FLINK_HOME}/conf" "${FLINK_HOME}/bin" "${FLINK_HOME}/lib" \
+        "-repKV" "rest.address,localhost,0.0.0.0" \
+        "-repKV" "rest.bind-address,localhost,0.0.0.0" \
+        "-repKV" "jobmanager.bind-host,localhost,0.0.0.0" \
+        "-repKV" "taskmanager.bind-host,localhost,0.0.0.0" \
+        "-rmKV" "taskmanager.host=localhost"; \
+  else \
+    sed -i 's/rest.address: localhost/rest.address: 0.0.0.0/g' "$CONF_FILE"; \
+    sed -i 's/rest.bind-address: localhost/rest.bind-address: 0.0.0.0/g' "$CONF_FILE"; \
+    sed -i 's/jobmanager.bind-host: localhost/jobmanager.bind-host: 0.0.0.0/g' "$CONF_FILE"; \
+    sed -i 's/taskmanager.bind-host: localhost/taskmanager.bind-host: 0.0.0.0/g' "$CONF_FILE"; \
+    sed -i '/taskmanager.host: localhost/d' "$CONF_FILE"; \
+  fi;
 
 # Configure container
 COPY docker-entrypoint.sh /
