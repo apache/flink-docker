@@ -39,7 +39,7 @@ jobs:
         java_version: [8, 11]
         build:
           - flink_version: 1.19-SNAPSHOT
-            branch: dev-master
+            branch: dev-1.19
           - flink_version: 1.18-SNAPSHOT
             branch: dev-1.18
           - flink_version: 1.17-SNAPSHOT
