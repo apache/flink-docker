@@ -1,4 +1,6 @@
-################################################################################
+#!/usr/bin/env bash
+
+###############################################################################
 #  Licensed to the Apache Software Foundation (ASF) under one
 #  or more contributor license agreements.  See the NOTICE file
 #  distributed with this work for additional information
@@ -14,25 +16,9 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 # limitations under the License.
-################################################################################
+###############################################################################
 
-target "docker-metadata-action" {}
-
-variable TAG {
-    default = "latest-snapshot"
-}
-
-variable DOCKER_FILE {
-    default = "Dockerfile"
-}
-
-target "bake-platform" {
-  inherits = ["docker-metadata-action"]
-  dockerfile = "${DOCKER_FILE}"
-  context = "./"
-  tags = ["${TAG}"]
-  platforms = [
-    "linux/amd64",
-    "linux/arm64/v8",
-  ]
+# stand-in for the distribution
+constructFlinkClassPath() {
+    echo ""
 }

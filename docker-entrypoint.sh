@@ -23,7 +23,7 @@ COMMAND_HISTORY_SERVER="history-server"
 
 # If unspecified, the hostname of the container is taken as the JobManager address
 JOB_MANAGER_RPC_ADDRESS=${JOB_MANAGER_RPC_ADDRESS:-$(hostname -f)}
-CONF_FILE="${FLINK_HOME}/conf/flink-conf.yaml"
+CONF_FILE_DIR="${FLINK_HOME}/conf"
 
 drop_privs_cmd() {
     if [ $(id -u) != 0 ]; then
@@ -59,34 +59,72 @@ copy_plugins_if_required() {
   done
 }
 
-set_config_option() {
-  local option=$1
-  local value=$2
+set_config_options() {
+    local config_parser_script="$FLINK_HOME/bin/config-parser-utils.sh"
+    local config_dir="$FLINK_HOME/conf"
+    local bin_dir="$FLINK_HOME/bin"
+    local lib_dir="$FLINK_HOME/lib"
 
-  # escape periods for usage in regular expressions
-  local escaped_option=$(echo ${option} | sed -e "s/\./\\\./g")
+    local config_params=""
 
-  # either override an existing entry, or append a new one
-  if grep -E "^${escaped_option}:.*" "${CONF_FILE}" > /dev/null; then
-        sed -i -e "s/${escaped_option}:.*/$option: $value/g" "${CONF_FILE}"
-  else
-        echo "${option}: ${value}" >> "${CONF_FILE}"
-  fi
+    while [ $# -gt 0 ]; do
+        local key="$1"
+        local value="$2"
+
+        config_params+=" -D${key}=${value}"
+
+        shift 2
+    done
+
+    if [ ! -z "${config_params}" ]; then
+        eval "${config_parser_script} ${config_dir} ${bin_dir} ${lib_dir} ${config_params}"
+    fi
 }
 
 prepare_configuration() {
-    set_config_option jobmanager.rpc.address ${JOB_MANAGER_RPC_ADDRESS}
-    set_config_option blob.server.port 6124
-    set_config_option query.server.port 6125
+    local config_options=()
+
+    config_options+=("jobmanager.rpc.address" "${JOB_MANAGER_RPC_ADDRESS}")
+    config_options+=("blob.server.port" "6124")
+    config_options+=("query.server.port" "6125")
 
     if [ -n "${TASK_MANAGER_NUMBER_OF_TASK_SLOTS}" ]; then
-        set_config_option taskmanager.numberOfTaskSlots ${TASK_MANAGER_NUMBER_OF_TASK_SLOTS}
+        config_options+=("taskmanager.numberOfTaskSlots" "${TASK_MANAGER_NUMBER_OF_TASK_SLOTS}")
+    fi
+
+    if [ ${#config_options[@]} -ne 0 ]; then
+        set_config_options "${config_options[@]}"
     fi
 
     if [ -n "${FLINK_PROPERTIES}" ]; then
-        echo "${FLINK_PROPERTIES}" >> "${CONF_FILE}"
+        process_flink_properties "${FLINK_PROPERTIES}"
     fi
-    envsubst < "${CONF_FILE}" > "${CONF_FILE}.tmp" && mv "${CONF_FILE}.tmp" "${CONF_FILE}"
+}
+
+process_flink_properties() {
+    local flink_properties_content=$1
+    local config_options=()
+
+    local OLD_IFS="$IFS"
+    IFS=$'\n'
+    for prop in $flink_properties_content; do
+        prop=$(echo $prop | tr -d '[:space:]')
+
+        if [ -z "$prop" ]; then
+            continue
+        fi
+
+        IFS=':' read -r key value <<< "$prop"
+
+        value=$(echo $value | envsubst)
+
+        config_options+=("$key" "$value")
+    done
+    IFS="$OLD_IFS"
+
+    if [ ${#config_options[@]} -ne 0 ]; then
+        set_config_options "${config_options[@]}"
+    fi
 }
 
 maybe_enable_jemalloc() {
