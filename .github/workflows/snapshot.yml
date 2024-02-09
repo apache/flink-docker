@@ -46,8 +46,6 @@ jobs:
             branch: dev-1.18
           - flink_version: 1.17-SNAPSHOT
             branch: dev-1.17
-          - flink_version: 1.16-SNAPSHOT
-            branch: dev-1.16
     steps:
       - uses: actions/checkout@v3
         with:
