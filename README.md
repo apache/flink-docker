@@ -83,6 +83,7 @@ Updating the Dockerfiles involves the following steps:
 2. Update Dockerfiles on the the `master` branch
     * Remove any existing Dockerfiles from the same major version
         * e.g. `rm -r 1.2`, if the new Flink version is `1.2.1`
+    * Remove any not-supported versions (i.e. versions that are not meant to be released anymore)
     * Copy the generated Dockerfiles from the `dev-x.y`/`dev-master` branch to `master`
     * Commit the changes with message `Update Dockerfiles for x.y.z release` <sup>\[[example](
       https://github.com/apache/flink-docker/commit/5920fd775ca1a8d03ee959d79bceeb5d6e8f35a1)]</sup>
