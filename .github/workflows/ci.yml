@@ -29,7 +29,7 @@ jobs:
       matrix:
         java_version: [ 8, 11, 17 ]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: "Build images"
         run: |
           ./add-custom.sh -u "$FLINK_TAR_URL" -j ${{ matrix.java_version }} -n "test-java${{ matrix.java_version }}"
