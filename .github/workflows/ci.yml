@@ -26,5 +26,6 @@ jobs:
         run: |
           ./add-custom.sh -u "https://s3.amazonaws.com/flink-nightly/flink-1.18-SNAPSHOT-bin-scala_2.12.tgz" -j 8 -n test-java8
           ./add-custom.sh -u "https://s3.amazonaws.com/flink-nightly/flink-1.18-SNAPSHOT-bin-scala_2.12.tgz" -j 11 -n test-java11
+          ./add-custom.sh -u "https://s3.amazonaws.com/flink-nightly/flink-1.18-SNAPSHOT-bin-scala_2.12.tgz" -j 17 -n test-java17
       - name: "Test images"
         run: testing/run_tests.sh
