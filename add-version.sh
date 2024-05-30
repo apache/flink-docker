@@ -124,7 +124,7 @@ for source_variant in "${SOURCE_VARIANTS[@]}"; do
 
             flink_url_file_path=flink/flink-${flink_version}/flink-${flink_version}-bin-scala_${scala_version}.tgz
 
-            flink_tgz_url="https://www.apache.org/dyn/closer.cgi?action=download&filename=${flink_url_file_path}"
+            flink_tgz_url="https://dlcdn.apache.org/${flink_url_file_path}"
             # Not all mirrors have the .asc files
             flink_asc_url=https://downloads.apache.org/${flink_url_file_path}.asc
 
