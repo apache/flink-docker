@@ -46,7 +46,7 @@ RUN set -ex; \
 # Configure Flink version
 ENV FLINK_TGZ_URL=https://dlcdn.apache.org/flink/flink-1.19.1/flink-1.19.1-bin-scala_2.12.tgz \
     FLINK_ASC_URL=https://downloads.apache.org/flink/flink-1.19.1/flink-1.19.1-bin-scala_2.12.tgz.asc \
-    GPG_KEY=B78A5EA1 \
+    GPG_KEY=6378E37EB3AAEA188B9CB0D396C2914BB78A5EA1 \
     CHECK_GPG=true
 
 # Prepare environment
