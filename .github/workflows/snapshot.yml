@@ -37,18 +37,18 @@ jobs:
       max-parallel: 1
       matrix:
         build:
-          - flink_version: 1.20-SNAPSHOT
+          - flink_version: 2.0-SNAPSHOT
             java_version: [8, 11, 17, 21]
             branch: dev-master
+          - flink_version: 1.20-SNAPSHOT
+            java_version: [ 8, 11, 17, 21 ]
+            branch: dev-1.20
           - flink_version: 1.19-SNAPSHOT
             java_version: [8, 11, 17, 21]
             branch: dev-1.19
           - flink_version: 1.18-SNAPSHOT
             java_version: [8, 11, 17]
             branch: dev-1.18
-          - flink_version: 1.17-SNAPSHOT
-            java_version: [8, 11]
-            branch: dev-1.17
     steps:
       - uses: actions/checkout@v4
         with:
