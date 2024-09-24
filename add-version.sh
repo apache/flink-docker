@@ -53,7 +53,7 @@ if [ -z "$flink_release" ] || [ -z "$flink_version" ]; then
     exit 1
 fi
 
-if [[ ! "$flink_version" =~ ^$flink_release\.+ ]]; then
+if [[ "$flink_version" != "$flink_release"* ]]; then
     error "Flink release must be prefix of version"
 fi
 
