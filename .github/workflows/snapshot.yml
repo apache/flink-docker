@@ -16,6 +16,9 @@
 name: "Publish SNAPSHOTs"
 
 on:
+  pull_request:
+    branches:
+      - master
   schedule:
     - cron: '0 0 * * *' # Deploy every day
   workflow_dispatch:
