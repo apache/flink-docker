@@ -65,19 +65,19 @@ set_config_options() {
     local bin_dir="$FLINK_HOME/bin"
     local lib_dir="$FLINK_HOME/lib"
 
-    local config_params=()
+    local config_params=""
 
     while [ $# -gt 0 ]; do
         local key="$1"
         local value="$2"
 
-        config_params+=("-D${key}=${value}")
+        config_params+=" -D${key}=${value}"
 
         shift 2
     done
 
-    if [ "${#config_params[@]}" -gt 0 ]; then
-        "${config_parser_script}" "${config_dir}" "${bin_dir}" "${lib_dir}" "${config_params[@]}"
+    if [ ! -z "${config_params}" ]; then
+        eval "${config_parser_script} ${config_dir} ${bin_dir} ${lib_dir} ${config_params}"
     fi
 }
 
