@@ -3,7 +3,7 @@
 export SOURCE_VARIANTS=(ubuntu )
 
 export DEFAULT_SCALA="2.12"
-export DEFAULT_JAVA="11"
+export DEFAULT_JAVA="17"
 
 function generateDockerfile {
     # define variables
