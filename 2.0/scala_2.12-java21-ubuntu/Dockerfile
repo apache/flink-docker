@@ -16,7 +16,7 @@
 # limitations under the License.
 ###############################################################################
 
-FROM eclipse-temurin:11-jre-jammy
+FROM eclipse-temurin:21-jre-jammy
 
 # Install dependencies
 RUN set -ex; \
