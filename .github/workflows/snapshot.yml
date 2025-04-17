@@ -69,11 +69,11 @@ jobs:
 
       - name: Prepare Dockerfiles and set env
         run: |
-          IMAGE_NAME=${{ matrix.build.flink_version }}-scala_2.12-java${{ matrix.java_version }}
+          IMAGE_NAME=${{ matrix.build.flink_version }}-scala_2.12-java${{ matrix.build.java_version }}
           echo "IMAGE_NAME=${IMAGE_NAME}" >> $GITHUB_ENV
           echo "TAG=${REGISTRY}/${OWNER}/${IMAGE_REPO}:${IMAGE_NAME}-debian" >> $GITHUB_ENV
-          ./add-custom.sh -u "https://s3.amazonaws.com/flink-nightly/flink-${{ matrix.build.flink_version }}-bin-scala_2.12.tgz" -j ${{ matrix.java_version }} -n ${IMAGE_NAME}
-          echo "DOCKER_FILE=$(ls ./*/*${{ matrix.build.flink_version }}*${{ matrix.java_version }}*/Dockerfile)" >> $GITHUB_ENV
+          ./add-custom.sh -u "https://s3.amazonaws.com/flink-nightly/flink-${{ matrix.build.flink_version }}-bin-scala_2.12.tgz" -j ${{ matrix.build.java_version }} -n ${IMAGE_NAME}
+          echo "DOCKER_FILE=$(ls ./*/*${{ matrix.build.flink_version }}*${{ matrix.build.java_version }}*/Dockerfile)" >> $GITHUB_ENV
 
       - name: Environment
         run: env
