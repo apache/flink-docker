@@ -20,6 +20,7 @@
 
 COMMAND_STANDALONE="standalone-job"
 COMMAND_HISTORY_SERVER="history-server"
+COMMAND_SQL_GATEWAY="sql-gateway"
 
 # If unspecified, the hostname of the container is taken as the JobManager address
 JOB_MANAGER_RPC_ADDRESS=${JOB_MANAGER_RPC_ADDRESS:-$(hostname -f)}
@@ -176,6 +177,12 @@ elif [ "$1" = ${COMMAND_HISTORY_SERVER} ]; then
     echo "Starting History Server"
 
     exec $(drop_privs_cmd) "$FLINK_HOME/bin/historyserver.sh" start-foreground "${args[@]}"
+elif [ "$1" = ${COMMAND_SQL_GATEWAY} ]; then
+    args=("${args[@]:1}")
+
+    echo "Starting Sql Gateway"
+
+    exec $(drop_privs_cmd) "$FLINK_HOME/bin/sql-gateway.sh" start-foreground "${args[@]}"
 elif [ "$1" = "taskmanager" ]; then
     args=("${args[@]:1}")
 
