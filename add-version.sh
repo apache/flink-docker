@@ -108,6 +108,8 @@ elif [ "$flink_version" = "1.19.1" ]; then
     gpg_key="6378E37EB3AAEA188B9CB0D396C2914BB78A5EA1"
 elif [ "$flink_version" = "1.19.2" ]; then
     gpg_key="5575E80D59BBB73C15A479B88C1FC56D16B0029D"
+elif [ "$flink_version" = "1.19.3" ]; then
+    gpg_key="CC33238850B5A92624ED7F6216AE0DDBBB2F380B"
 else
     error "Missing GPG key ID for this release"
 fi
