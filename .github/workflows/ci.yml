@@ -18,7 +18,7 @@ name: "CI"
 on: [push, pull_request]
 
 env:
-  FLINK_TAR_URL: "https://s3.amazonaws.com/flink-nightly/flink-2.1-SNAPSHOT-bin-scala_2.12.tgz"
+  FLINK_TAR_URL: "https://s3.amazonaws.com/flink-nightly/flink-2.2-SNAPSHOT-bin-scala_2.12.tgz"
 
 jobs:
   ci:
