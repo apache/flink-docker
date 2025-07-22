@@ -15,7 +15,7 @@ function generateDockerfile {
     java_version=$6
     source_variant=$7
 
-    from_docker_image="eclipse-temurin:${java_version}-jre-jammy"
+    from_docker_image="eclipse-temurin:${java_version}-jre-noble"
 
     cp docker-entrypoint.sh "$dir/docker-entrypoint.sh"
 
