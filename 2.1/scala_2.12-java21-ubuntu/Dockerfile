@@ -16,7 +16,7 @@
 # limitations under the License.
 ###############################################################################
 
-FROM eclipse-temurin:8-jre-jammy
+FROM eclipse-temurin:21-jre-jammy
 
 # Install dependencies
 RUN set -ex; \
@@ -44,9 +44,9 @@ RUN set -ex; \
   gosu nobody true
 
 # Configure Flink version
-ENV FLINK_TGZ_URL=https://dlcdn.apache.org/flink/flink-1.19.3/flink-1.19.3-bin-scala_2.12.tgz \
-    FLINK_ASC_URL=https://downloads.apache.org/flink/flink-1.19.3/flink-1.19.3-bin-scala_2.12.tgz.asc \
-    GPG_KEY=CC33238850B5A92624ED7F6216AE0DDBBB2F380B \
+ENV FLINK_TGZ_URL=https://dlcdn.apache.org/flink/flink-2.1.0/flink-2.1.0-bin-scala_2.12.tgz \
+    FLINK_ASC_URL=https://downloads.apache.org/flink/flink-2.1.0/flink-2.1.0-bin-scala_2.12.tgz.asc \
+    GPG_KEY=7A14EF9AD986EF0D56B2E73F6AF817E6C59EC690 \
     CHECK_GPG=true
 
 # Prepare environment
@@ -81,22 +81,13 @@ RUN set -ex; \
   chown -R flink:flink .; \
   \
   # Replace default REST/RPC endpoint bind address to use the container's network interface \
-  CONF_FILE="$FLINK_HOME/conf/flink-conf.yaml"; \
-  if [ ! -e "$FLINK_HOME/conf/flink-conf.yaml" ]; then \
-    CONF_FILE="${FLINK_HOME}/conf/config.yaml"; \
-    /bin/bash "$FLINK_HOME/bin/config-parser-utils.sh" "${FLINK_HOME}/conf" "${FLINK_HOME}/bin" "${FLINK_HOME}/lib" \
-        "-repKV" "rest.address,localhost,0.0.0.0" \
-        "-repKV" "rest.bind-address,localhost,0.0.0.0" \
-        "-repKV" "jobmanager.bind-host,localhost,0.0.0.0" \
-        "-repKV" "taskmanager.bind-host,localhost,0.0.0.0" \
-        "-rmKV" "taskmanager.host=localhost"; \
-  else \
-    sed -i 's/rest.address: localhost/rest.address: 0.0.0.0/g' "$CONF_FILE"; \
-    sed -i 's/rest.bind-address: localhost/rest.bind-address: 0.0.0.0/g' "$CONF_FILE"; \
-    sed -i 's/jobmanager.bind-host: localhost/jobmanager.bind-host: 0.0.0.0/g' "$CONF_FILE"; \
-    sed -i 's/taskmanager.bind-host: localhost/taskmanager.bind-host: 0.0.0.0/g' "$CONF_FILE"; \
-    sed -i '/taskmanager.host: localhost/d' "$CONF_FILE"; \
-  fi;
+  CONF_FILE="${FLINK_HOME}/conf/config.yaml"; \
+  /bin/bash "$FLINK_HOME/bin/config-parser-utils.sh" "${FLINK_HOME}/conf" "${FLINK_HOME}/bin" "${FLINK_HOME}/lib" \
+    "-repKV" "rest.address,localhost,0.0.0.0" \
+    "-repKV" "rest.bind-address,localhost,0.0.0.0" \
+    "-repKV" "jobmanager.bind-host,localhost,0.0.0.0" \
+    "-repKV" "taskmanager.bind-host,localhost,0.0.0.0" \
+    "-rmKV" "taskmanager.host=localhost";
 
 # Configure container
 COPY docker-entrypoint.sh /
