@@ -37,19 +37,16 @@ jobs:
       max-parallel: 1
       matrix:
         java_version: [8, 11, 17, 21]
-        flink_version: [ 2.0-SNAPSHOT, 1.20-SNAPSHOT, 1.19-SNAPSHOT, 1.18-SNAPSHOT ]
+        flink_version: [ 2.1-SNAPSHOT, 2.0-SNAPSHOT, 1.20-SNAPSHOT, 1.19-SNAPSHOT ]
         include:
-          - flink_version: 2.0-SNAPSHOT
+          - flink_version: 2.1-SNAPSHOT
             branch: dev-master
+          - flink_version: 2.0-SNAPSHOT
+            branch: dev-2.0
           - flink_version: 1.20-SNAPSHOT
             branch: dev-1.20
           - flink_version: 1.19-SNAPSHOT
             branch: dev-1.19
-          - flink_version: 1.18-SNAPSHOT
-            branch: dev-1.18
-        exclude:
-          - flink_version: 1.18-SNAPSHOT
-            java_version: 21
     steps:
       - uses: actions/checkout@v4
         with:
