@@ -48,13 +48,15 @@ dirCommit() {
 pruneTags() {
     local tags=$1
     local latestVersion=$2
-    if [[ $tags =~ $latestVersion ]]; then
+    # Escape dots in version for proper regex matching
+    local escapedVersion="${latestVersion//./\\.}"
+    if [[ $tags =~ (^|[, ])$escapedVersion([, -]|$) ]]; then
         # tags contains latest version. keep "latest" tag
         echo $tags
     else
         # remove "latest", any "scala_" or "javaXX" tag, unless it is the latest version
-        # the "scala" / "java" tags have a similar semantic as the "latest" tag in docker registries. 
-        echo $tags | sed -E 's|, (scala\|latest\|java[0-9]{1,2})[-_.[:alnum:]]*||g'
+        # the "scala" / "java" tags have a similar semantic as the "latest" tag in docker registries.
+        echo $tags | sed -E 's#, (scala|latest|java[0-9]{1,2})[-_.[:alnum:]]*##g'
     fi
 }
 
