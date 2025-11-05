@@ -1,0 +1,148 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: "Build and Push Docker Images"
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+      - 'dev-*'
+    tags:
+      - '*-*.*'
+  pull_request:
+    branches:
+      - master
+      - 'dev-*'
+
+env:
+  REGISTRY: ghcr.io
+  OWNER: ${{ github.repository_owner }}
+  IMAGE_REPO: flink-docker
+
+jobs:
+  build_and_push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Flink 1.20.x
+          - flink_version: "1.20"
+            java_version: "8"
+            dockerfile: "1.20/scala_2.12-java8-ubuntu/Dockerfile"
+          - flink_version: "1.20"
+            java_version: "11"
+            dockerfile: "1.20/scala_2.12-java11-ubuntu/Dockerfile"
+          - flink_version: "1.20"
+            java_version: "17"
+            dockerfile: "1.20/scala_2.12-java17-ubuntu/Dockerfile"
+          # Flink 2.0.x
+          - flink_version: "2.0"
+            java_version: "11"
+            dockerfile: "2.0/scala_2.12-java11-ubuntu/Dockerfile"
+          - flink_version: "2.0"
+            java_version: "17"
+            dockerfile: "2.0/scala_2.12-java17-ubuntu/Dockerfile"
+          - flink_version: "2.0"
+            java_version: "21"
+            dockerfile: "2.0/scala_2.12-java21-ubuntu/Dockerfile"
+          # Flink 2.1.x (Latest)
+          - flink_version: "2.1"
+            java_version: "11"
+            dockerfile: "2.1/scala_2.12-java11-ubuntu/Dockerfile"
+          - flink_version: "2.1"
+            java_version: "17"
+            dockerfile: "2.1/scala_2.12-java17-ubuntu/Dockerfile"
+          - flink_version: "2.1"
+            java_version: "21"
+            dockerfile: "2.1/scala_2.12-java21-ubuntu/Dockerfile"
+
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Determine image tags
+        id: meta
+        run: |
+          FLINK_VERSION="${{ matrix.flink_version }}"
+          JAVA_VERSION="${{ matrix.java_version }}"
+
+          # Read full version from Dockerfile (e.g., 2.1.1)
+          # Extract from FLINK_TGZ_URL which contains the version
+          DOCKERFILE_PATH="${{ matrix.dockerfile }}"
+          FULL_VERSION=$(grep "FLINK_TGZ_URL=" "$DOCKERFILE_PATH" | head -1 | sed -E 's/.*flink-([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
+
+          if [ -z "$FULL_VERSION" ]; then
+            echo "ERROR: Could not extract version from $DOCKERFILE_PATH"
+            exit 1
+          fi
+
+          echo "full_version=$FULL_VERSION" >> $GITHUB_OUTPUT
+
+          # Build base image name
+          BASE_TAG="${FULL_VERSION}-scala_2.12-java${JAVA_VERSION}"
+
+          # Determine tags based on event type
+          TAGS="${REGISTRY}/${OWNER}/${IMAGE_REPO}:${BASE_TAG}"
+
+          # Add branch-specific tags for branch pushes
+          if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref_type }}" = "branch" ]; then
+            BRANCH_NAME=$(echo "${{ github.ref_name }}" | sed 's/\//-/g')
+            TAGS="${TAGS},${REGISTRY}/${OWNER}/${IMAGE_REPO}:${BRANCH_NAME}-java${JAVA_VERSION}"
+            TAGS="${TAGS},${REGISTRY}/${OWNER}/${IMAGE_REPO}:${BRANCH_NAME}-${FLINK_VERSION}-java${JAVA_VERSION}"
+          fi
+
+          # Add git sha tag
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          TAGS="${TAGS},${REGISTRY}/${OWNER}/${IMAGE_REPO}:${BASE_TAG}-${SHORT_SHA}"
+
+          echo "tags=$TAGS" >> $GITHUB_OUTPUT
+          echo "Image tags: $TAGS"
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ matrix.flink_version }}/scala_2.12-java${{ matrix.java_version }}-ubuntu
+          file: ${{ matrix.dockerfile }}
+          platforms: linux/amd64,linux/arm64/v8
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Summary
+        if: github.event_name != 'pull_request'
+        run: |
+          echo "✅ Successfully built and pushed Flink ${{ steps.meta.outputs.full_version }} with Java ${{ matrix.java_version }}"
+          echo "Tags:"
+          echo "${{ steps.meta.outputs.tags }}" | tr ',' '\n' | sed 's/^/  - /'
