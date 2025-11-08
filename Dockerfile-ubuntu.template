@@ -88,6 +88,7 @@ RUN set -ex; \
     "-rmKV" "taskmanager.host=localhost";
 
 # Configure container
+USER flink
 COPY docker-entrypoint.sh /
 ENTRYPOINT ["/docker-entrypoint.sh"]
 EXPOSE 6123 8081
