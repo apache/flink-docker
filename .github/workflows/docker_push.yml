@@ -63,7 +63,7 @@ jobs:
           - flink_version: "2.0"
             java_version: "21"
             dockerfile: "2.0/scala_2.12-java21-ubuntu/Dockerfile"
-          # Flink 2.1.x (Latest)
+          # Flink 2.1.x
           - flink_version: "2.1"
             java_version: "11"
             dockerfile: "2.1/scala_2.12-java11-ubuntu/Dockerfile"
@@ -73,6 +73,16 @@ jobs:
           - flink_version: "2.1"
             java_version: "21"
             dockerfile: "2.1/scala_2.12-java21-ubuntu/Dockerfile"
+          # Flink 2.2.x (Latest)
+          - flink_version: "2.2"
+            java_version: "11"
+            dockerfile: "2.2/scala_2.12-java11-ubuntu/Dockerfile"
+          - flink_version: "2.2"
+            java_version: "17"
+            dockerfile: "2.2/scala_2.12-java17-ubuntu/Dockerfile"
+          - flink_version: "2.2"
+            java_version: "21"
+            dockerfile: "2.2/scala_2.12-java21-ubuntu/Dockerfile"
 
     steps:
       - name: Check out the repo
