@@ -1,0 +1,60 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+
+# The action is inspired by
+# If versions are not allowed
+# Check https://github.com/apache/infrastructure-actions actions.yml for allowed versions nd use them
+# Or create a PR there to allow required versions
+name: CI checking if required versions are allowed by parent Apache Infra
+
+on:
+  # If you want to run this workflow manually, keep `workflow_dispatch`. Otherwise, remove this trigger.
+  workflow_dispatch:
+  # Trigger the workflow on push or pull requests when the contents of your `.github` directory change.
+  # Note: the cheeck-project-actions.yml workflow inspects the `.github/workflows` and `.github/actions` directories.
+  push:
+    branches:
+      - master
+    paths:
+      - ".github/**"
+  pull_request:
+    paths:
+      - ".github/**"
+
+permissions:
+  # Only read access is required.
+  contents: read
+  # All other permissions are "none".
+
+jobs:
+  # This is the job that verifies your project's usage of approved GitHub actions
+  check:
+    name: Check actions usage
+    uses: apache/infrastructure-actions/.github/workflows/check-project-actions.yml@main
+    permissions:
+      # Only read access to the repository's content.
+      contents: read
+      # All other permissions are "none".
+      # Optionally, you can specify a different repository and/or ref to check. These options are passed to
+      # GitHub actions/checkout, see https://github.com/actions/checkout?tab=readme-ov-file#usage for details.
+      #with:
+      #repository: apache/my-project
+      #ref: my-branch
+      #fetch-depth:
+      #submodules:
