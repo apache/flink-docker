@@ -77,7 +77,7 @@ jobs:
         run: env
 
       - name: "Build and push Docker images (supported platforms)"
-        uses: docker/bake-action@aefd381cbaa93c62a1e8b02194ae420cc36269d2
+        uses: docker/bake-action@6614cfa25eff9a0b2b2697efb0b6159e7680d584
         with:
           files: |
             .github/workflows/docker-bake.hcl
