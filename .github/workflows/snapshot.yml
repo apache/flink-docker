@@ -79,6 +79,14 @@ jobs:
       - name: "Build and push Docker images (supported platforms)"
         uses: docker/bake-action@6614cfa25eff9a0b2b2697efb0b6159e7680d584
         with:
+          # bake-action >= v7 defaults an unset "source" to the workflow's git
+          # context and bakes it as a remote ref, which reads docker-bake.hcl and
+          # the build context from the triggering commit on master. This workflow
+          # needs the local working tree instead: the Dockerfile is generated at
+          # runtime by add-custom.sh, and the docker-metadata-action target it
+          # inherits is only defined in the checked-out dev-* branch. Pin to the
+          # local source to restore the pre-v7 behavior.
+          source: .
           files: |
             .github/workflows/docker-bake.hcl
             ${{ steps.meta.outputs.bake-file }}
