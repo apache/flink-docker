@@ -120,6 +120,54 @@ process_flink_properties() {
     fi
 }
 
+# FLINK-39924: jemalloc's default narenas = 4 * ncpus is taken from
+# /proc/cpuinfo (host CPU count), ignoring the container's quota
+# and idle arenas hold dirty pages until dirty_decay_ms, inflating
+# RSS. Derive narenas from the cgroup CPU quota instead.
+configure_jemalloc_narenas() {
+    case ",${MALLOC_CONF}," in
+        *,narenas:*)
+            echo "jemalloc: respecting user-supplied narenas in MALLOC_CONF=${MALLOC_CONF}"
+            return
+            ;;
+    esac
+
+    local cpus="" cpu_quota cpu_period
+    if [ -r /sys/fs/cgroup/cpu.max ]; then
+        # cgroup v2
+        read -r cpu_quota cpu_period < /sys/fs/cgroup/cpu.max
+        if [ "$cpu_quota" != "max" ] && [ -n "$cpu_period" ] && [ "$cpu_period" -gt 0 ]; then
+            cpus=$(( (cpu_quota + cpu_period - 1) / cpu_period ))
+        fi
+    elif [ -r /sys/fs/cgroup/cpu/cpu.cfs_quota_us ] && [ -r /sys/fs/cgroup/cpu/cpu.cfs_period_us ]; then
+        # cgroup v1
+        cpu_quota=$(cat /sys/fs/cgroup/cpu/cpu.cfs_quota_us)
+        cpu_period=$(cat /sys/fs/cgroup/cpu/cpu.cfs_period_us)
+        if [ "$cpu_quota" -gt 0 ] && [ "$cpu_period" -gt 0 ]; then
+            cpus=$(( (cpu_quota + cpu_period - 1) / cpu_period ))
+        fi
+    fi
+    # Fall back to nproc when no quota is set (cpuset-pinned / unlimited).
+    if [ -z "$cpus" ] || [ "$cpus" -le 0 ]; then
+        cpus=$(nproc 2>/dev/null || echo 1)
+    fi
+
+    local narenas
+    if [ "$cpus" -le 1 ]; then
+        narenas=1
+    else
+        narenas=$(( cpus * 4 ))
+    fi
+
+    if [ -z "${MALLOC_CONF}" ]; then
+        export MALLOC_CONF="narenas:${narenas}"
+        echo "jemalloc: setting MALLOC_CONF=${MALLOC_CONF} (detected ${cpus} CPUs)"
+    else
+        export MALLOC_CONF="${MALLOC_CONF},narenas:${narenas}"
+        echo "jemalloc: appended narenas, MALLOC_CONF=${MALLOC_CONF} (detected ${cpus} CPUs)"
+    fi
+}
+
 maybe_enable_jemalloc() {
     if [ "${DISABLE_JEMALLOC:-false}" == "false" ]; then
         JEMALLOC_PATH="/usr/lib/$(uname -m)-linux-gnu/libjemalloc.so"
@@ -135,7 +183,10 @@ maybe_enable_jemalloc() {
                 MSG_PATH="$JEMALLOC_PATH and $JEMALLOC_FALLBACK"
             fi
             echo "WARNING: attempted to load jemalloc from $MSG_PATH but the library couldn't be found. glibc will be used instead."
+            return
         fi
+
+        configure_jemalloc_narenas
     fi
 }
 
