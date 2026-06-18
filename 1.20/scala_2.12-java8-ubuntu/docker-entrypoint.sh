@@ -108,7 +108,7 @@ process_flink_properties() {
     local OLD_IFS="$IFS"
     IFS=$'\n'
     for prop in $flink_properties_content; do
-        prop=$(echo $prop | tr -d '[:space:]')
+        prop=$(echo "$prop" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
 
         if [ -z "$prop" ]; then
             continue
