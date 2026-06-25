@@ -96,7 +96,7 @@ For **publishing to DockerHub: apache/flink** , you need to perform the followin
 1. Make sure that you are authenticated with your Docker ID, and that your Docker ID has access to `apache/flink`: `docker login -u <username>`
    1. If you do not have access, you should seek help via the mailing list. 
       We have a limited number of seats which are full, see [INFRA-23623](https://issues.apache.org/jira/browse/INFRA-23623) for more information. See also [INFRA-21276](https://issues.apache.org/jira/browse/INFRA-21276).
-2. Generate and upload the new images: `./publish-to-dockerhub.sh`.
+2. Upload the new images: `./publish-to-dockerhub.sh` (Before this [commit](https://github.com/apache/flink-docker/commit/cfeea17390958606ec56ffd7caaf24dd44263743), do not execute this script on the arm platform machine, such as Apple Silicon).
 
 For **publishing as an official image**, a new manifest should be generated and a pull request opened
 on the Docker Library [`official-images`](https://github.com/docker-library/official-images) repo.
