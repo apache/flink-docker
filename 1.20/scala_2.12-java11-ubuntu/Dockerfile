@@ -96,6 +96,17 @@ RUN set -ex; \
     sed -i '/taskmanager.host: localhost/d' "$CONF_FILE"; \
   fi;
 
+# Update log4j to fix CVE-2025-68161
+RUN set -ex; \
+  LOG4J_VERSION=2.25.4; \
+  find "$FLINK_HOME/lib" -name "log4j-*.jar" -delete; \
+  wget -nv -P "$FLINK_HOME/lib" \
+    "https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-api/${LOG4J_VERSION}/log4j-api-${LOG4J_VERSION}.jar" \
+    "https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-core/${LOG4J_VERSION}/log4j-core-${LOG4J_VERSION}.jar" \
+    "https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-1.2-api/${LOG4J_VERSION}/log4j-1.2-api-${LOG4J_VERSION}.jar" \
+    "https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-slf4j-impl/${LOG4J_VERSION}/log4j-slf4j-impl-${LOG4J_VERSION}.jar"; \
+  chown flink:flink "$FLINK_HOME/lib"/log4j-*.jar
+
 # Configure container
 COPY docker-entrypoint.sh /
 ENTRYPOINT ["/docker-entrypoint.sh"]
