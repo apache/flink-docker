@@ -25,9 +25,9 @@ RUN set -ex; \
   rm -rf /var/lib/apt/lists/*
 
 # Configure Flink version
-ENV FLINK_TGZ_URL=https://dlcdn.apache.org/flink/flink-2.2.0/flink-2.2.0-bin-scala_2.12.tgz \
-    FLINK_ASC_URL=https://downloads.apache.org/flink/flink-2.2.0/flink-2.2.0-bin-scala_2.12.tgz.asc \
-    GPG_KEY=7BC9FA3EBE7E3DC7CD0EA0454C09617EAF241D76 \
+ENV FLINK_TGZ_URL=https://dlcdn.apache.org/flink/flink-2.2.1/flink-2.2.1-bin-scala_2.12.tgz \
+    FLINK_ASC_URL=https://downloads.apache.org/flink/flink-2.2.1/flink-2.2.1-bin-scala_2.12.tgz.asc \
+    GPG_KEY=F7529FAE24811A5C0DF3CA741596BBF0726835D8 \
     CHECK_GPG=true
 
 # Prepare environment
