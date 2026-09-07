@@ -86,7 +86,7 @@ jobs:
 
     steps:
       - name: Check out the repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@1f40c72289eff860ee54a304f1438e3cff362e0a
