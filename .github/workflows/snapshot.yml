@@ -53,13 +53,13 @@ jobs:
           ref: ${{ matrix.branch }}
 
       - name: "Set up QEMU"
-        uses: docker/setup-qemu-action@1f40c72289eff860ee54a304f1438e3cff362e0a
+        uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1
 
       - name: "Set up Docker Buildx"
-        uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069
 
       - name: "Log in to the Container registry"
-        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -77,7 +77,7 @@ jobs:
         run: env
 
       - name: "Build and push Docker images (supported platforms)"
-        uses: docker/bake-action@6614cfa25eff9a0b2b2697efb0b6159e7680d584
+        uses: docker/bake-action@59cb1203cd42bcefd40a1b6d73b589e48c86040e
         with:
           # bake-action >= v7 defaults an unset "source" to the workflow's git
           # context and bakes it as a remote ref, which reads docker-bake.hcl and
