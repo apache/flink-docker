@@ -25,16 +25,9 @@ COMMAND_HISTORY_SERVER="history-server"
 JOB_MANAGER_RPC_ADDRESS=${JOB_MANAGER_RPC_ADDRESS:-$(hostname -f)}
 CONF_FILE_DIR="${FLINK_HOME}/conf"
 
-drop_privs_cmd() {
-    if [ $(id -u) != 0 ]; then
-        # Don't need to drop privs if EUID != 0
-        return
-    elif [ -x /sbin/su-exec ]; then
-        # Alpine
-        echo su-exec flink
-    else
-        # Others
-        echo gosu flink
+check_priv_user() {
+    if [ $(id -u) == 0 ]; then
+        echo "WARNING: Running as root user is not recommended. Please use a non-root user to run Flink."
     fi
 }
 
@@ -146,6 +139,8 @@ maybe_enable_jemalloc() {
     fi
 }
 
+check_priv_user
+
 maybe_enable_jemalloc
 
 copy_plugins_if_required
@@ -163,28 +158,28 @@ elif [ "$1" = "jobmanager" ]; then
 
     echo "Starting Job Manager"
 
-    exec $(drop_privs_cmd) "$FLINK_HOME/bin/jobmanager.sh" start-foreground "${args[@]}"
+    exec "$FLINK_HOME/bin/jobmanager.sh" start-foreground "${args[@]}"
 elif [ "$1" = ${COMMAND_STANDALONE} ]; then
     args=("${args[@]:1}")
 
     echo "Starting Job Manager"
 
-    exec $(drop_privs_cmd) "$FLINK_HOME/bin/standalone-job.sh" start-foreground "${args[@]}"
+    exec "$FLINK_HOME/bin/standalone-job.sh" start-foreground "${args[@]}"
 elif [ "$1" = ${COMMAND_HISTORY_SERVER} ]; then
     args=("${args[@]:1}")
 
     echo "Starting History Server"
 
-    exec $(drop_privs_cmd) "$FLINK_HOME/bin/historyserver.sh" start-foreground "${args[@]}"
+    exec "$FLINK_HOME/bin/historyserver.sh" start-foreground "${args[@]}"
 elif [ "$1" = "taskmanager" ]; then
     args=("${args[@]:1}")
 
     echo "Starting Task Manager"
 
-    exec $(drop_privs_cmd) "$FLINK_HOME/bin/taskmanager.sh" start-foreground "${args[@]}"
+    exec "$FLINK_HOME/bin/taskmanager.sh" start-foreground "${args[@]}"
 fi
 
 args=("${args[@]}")
 
 # Running command in pass-through mode
-exec $(drop_privs_cmd) "${args[@]}"
+exec "${args[@]}"
